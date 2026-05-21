@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج تفريغ بيانات تقرير ضبط الجودة</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .period-input {
+            background: rgba(255,255,255,0.15);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .period-input input {
+            background: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            margin: 0 5px;
+        }
+
+        .progress-container {
+            background: #f0f4f8;
+            padding: 20px 30px;
+            border-bottom: 3px solid #e1e8ed;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #d1d9e0;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .progress-line-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .step {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #d1d9e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+            font-size: 14px;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .form-container {
+            padding: 35px 30px;
+        }
+
+        .form-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: #1e3c72;
+            margin-bottom: 8px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-description {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .required::after {
+            content: ' *';
+            color: #e53e3e;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e1e8ed;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 2px solid #e1e8ed;
+        }
+
+        .dynamic-items {
+            margin-top: 15px;
+        }
+
+        .dynamic-item {
+            background: #f8fafc;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .dynamic-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .dynamic-item-title {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .remove-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: #fecaca;
+        }
+
+        .add-btn {
+            background: #d1fae5;
+            color: #059669;
+            border: 2px dashed #10b981;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #a7f3d0;
+            border-style: solid;
+        }
+
+        .checkbox-group,
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item,
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover,
+        .radio-item:hover {
+            background: #edf2f7;
+        }
+
+        .checkbox-item input,
+        .radio-item input {
+            margin-left: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .other-input {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .other-input.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .success-icon {
+            font-size: 70px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+
+        .percentage-input {
+            position: relative;
+        }
+
+        .percentage-input input {
+            padding-left: 45px;
+        }
+
+        .percentage-input::after {
+            content: '%';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group.error input,
+        .form-group.error select,
+        .form-group.error textarea {
+            border-color: #e53e3e;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-pdf {
+            background: #ef4444;
+            color: white;
+        }
+
+        .export-email {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .export-json {
+            background: #10b981;
+            color: white;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* تمييز الأقسام في صفحة النجاح والتوصيات */
+        .section-box {
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid;
+        }
+
+        .success-stories-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+        }
+
+        .success-stories-box .section-subtitle {
+            color: #92400e;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .urgent-rec-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #ef4444;
+        }
+
+        .urgent-rec-box .section-subtitle {
+            color: #991b1b;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .medium-rec-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #3b82f6;
+        }
+
+        .medium-rec-box .section-subtitle {
+            color: #1e40af;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .strategic-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+        }
+
+        .strategic-box .section-subtitle {
+            color: #065f46;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: auto;
+        }
+
+        .badge-success {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .badge-urgent {
+            background: #ef4444;
+            color: white;
+        }
+
+        .badge-medium {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .badge-strategic {
+            background: #10b981;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-container {
+                flex-direction: column-reverse;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .form-container {
+                padding: 25px 20px;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+            }
+
+            .export-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* PDF Export Styles */
+        #pdfContent {
+            display: none;
+            background: white;
+            padding: 40px;
+        }
+
+        #pdfContent.show {
+            display: block;
+        }
+
+        .pdf-header {
+            text-align: center;
+            border-bottom: 3px solid #1e3c72;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .pdf-title {
+            font-size: 28px;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .pdf-period {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .pdf-section {
+            margin-bottom: 30px;
+        }
+
+        .pdf-section-title {
+            font-size: 20px;
+            color: #1e3c72;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .pdf-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .pdf-label {
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .pdf-value {
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 نموذج تفريغ بيانات تقرير ضبط الجودة</h1>
+            <div class="period-input">
+                <span>الفترة:</span>
+                <input type="text" id="periodStart" value="ديسمبر 2025" placeholder="بداية الفترة">
+                <span>-</span>
+                <input type="text" id="periodEnd" value="أبريل 2026" placeholder="نهاية الفترة">
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-line">
+                    <div class="progress-line-fill" id="progressFill"></div>
+                </div>
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+                <div class="step" data-step="5">5</div>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 13px;">
+                الخطوة <span id="currentStepNum">1</span> من <span id="totalSteps">5</span>
+            </p>
+        </div>
+
+        <form id="qualityForm" class="form-container">
+            <!-- القسم 1: البيانات الأساسية -->
+            <div class="form-section active" data-section="1">
+                <h2 class="section-title">📋 البيانات الأساسية</h2>
+                <p class="section-description">المعلومات الأساسية عن التقرير والمختص</p>
+
+                <div class="form-group">
+                    <label class="required">اسم المختص</label>
+                    <input type="text" name="specialistName" required>
+                    <div class="error-message">يرجى إدخال اسم المختص</div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="required">المسمى الوظيفي</label>
+                        <select name="jobTitle" id="jobTitle" required>
+                            <option value="">اختر المسمى الوظيفي</option>
+                            <option value="منسق ضبط جودة">منسق ضبط جودة</option>
+                            <option value="مشرف تربوي">مشرف تربوي</option>
+                            <option value="مدير مركز">مدير مركز</option>
+                            <option value="باحث ميداني">باحث ميداني</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                        <div class="error-message">يرجى اختيار المسمى الوظيفي</div>
+                        <div class="other-input" id="jobTitleOther">
+                            <input type="text" placeholder="حدد المسمى الوظيفي" name="jobTitleOther">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">المنطقة التعليمية</label>
+                        <select name="region" id="region" required>
+                            <option value="">اختر المنطقة</option>
+                            <option value="الوسطى - شرق">الوسطى - شرق</option>
+                            <option value="الوسطى - غرب">الوسطى - غرب</option>
+                            <option value="الجنوبية - خانيونس">الجنوبية - خانيونس</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                        <div class="error-message">يرجى اختيار المنطقة التعليمية</div>
+                        <div class="other-input" id="regionOther">
+                            <input type="text" placeholder="حدد المنطقة" name="regionOther">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="required">تاريخ إدخال البيانات</label>
+                        <input type="date" name="entryDate" required>
+                        <div class="error-message">يرجى إدخال التاريخ</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">فترة الزيارة</label>
+                        <select name="visitPeriod" required>
+                            <option value="">اختر الفترة</option>
+                            <option value="صباحية">صباحية</option>
+                            <option value="مسائية">مسائية</option>
+                            <option value="كلا الفترتين">كلا الفترتين</option>
+                        </select>
+                        <div class="error-message">يرجى اختيار فترة الزيارة</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">اسم المركز التعليمي</label>
+                    <input type="text" name="centerName" required>
+                    <div class="error-message">يرجى إدخال اسم المركز</div>
+                </div>
+            </div>
+
+            <!-- القسم 2: الإحصائيات -->
+            <div class="form-section" data-section="2">
+                <h2 class="section-title">📊 الإحصائيات الكمية</h2>
+                <p class="section-description">البيانات الإحصائية للمركز التعليمي</p>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="required">عدد الموظفين</label>
+                        <input type="number" name="staffCount" min="0" required>
+                        <div class="error-message">يرجى إدخال عدد الموظفين</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">عدد الطلبة المسجلين</label>
+                        <input type="number" name="studentCount" min="0" required>
+                        <div class="error-message">يرجى إدخال عدد الطلبة</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="required">نسبة حضور الطلبة</label>
+                        <div class="percentage-input">
+                            <input type="number" name="attendanceRate" min="0" max="100" required>
+                        </div>
+                        <div class="error-message">يرجى إدخال نسبة صحيحة (0-100)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>عدد الغرف الصفية المستخدمة</label>
+                        <input type="number" name="classroomsCount" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>عدد الخيام/المساحات المؤقتة</label>
+                    <input type="number" name="tentsCount" min="0">
+                </div>
+            </div>
+
+            <!-- القسم 3: التحديات -->
+            <div class="form-section" data-section="3">
+                <h2 class="section-title">⚠️ التحديات والمخاطر</h2>
+                <p class="section-description">أضف التحديات والمخاطر المرصودة في المركز</p>
+
+                <div class="form-group">
+                    <label>التحديات المرصودة</label>
+                    <div id="challengesContainer" class="dynamic-items">
+                        <!-- سيتم إضافة التحديات هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addChallenge()">
+                        + إضافة تحدي
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>المخاطر الأمنية</label>
+                    <div id="securityRisksContainer" class="dynamic-items">
+                        <!-- سيتم إضافة المخاطر هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addSecurityRisk()">
+                        + إضافة خطر أمني
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>ملاحظات إضافية</label>
+                    <textarea name="challengesNotes" placeholder="أية ملاحظات إضافية..."></textarea>
+                </div>
+            </div>
+
+            <!-- القسم 4: الأنشطة -->
+            <div class="form-section" data-section="4">
+                <h2 class="section-title">🎯 الأنشطة المنفذة</h2>
+                <p class="section-description">الأنشطة والمبادرات المنفذة في المركز</p>
+
+                <div class="form-group">
+                    <label class="required">هل تم توظيف استراتيجيات تعلم نشطة؟</label>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="activeLearning" value="نعم" required>
+                            <span>نعم</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="activeLearning" value="لا">
+                            <span>لا</span>
+                        </label>
+                    </div>
+                    <div class="error-message">يرجى الاختيار</div>
+                </div>
+
+                <div class="form-group" id="strategyGroup" style="display: none;">
+                    <label>وصف الاستراتيجية وأثرها</label>
+                    <textarea name="strategyDescription" placeholder="صف الاستراتيجية المستخدمة وأثرها..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>المسابقات التعليمية المنفذة</label>
+                    <div id="competitionsContainer" class="dynamic-items">
+                        <!-- سيتم إضافة المسابقات هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addCompetition()">
+                        + إضافة مسابقة
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">مشاركة مجتمعية</label>
+                    <select name="communityParticipation" id="communityParticipation" required>
+                        <option value="">اختر نوع المشاركة</option>
+                        <option value="برلمان طلابي">برلمان طلابي</option>
+                        <option value="مجلس أولياء أمور">مجلس أولياء أمور</option>
+                        <option value="كليهما">كليهما</option>
+                        <option value="لا">لا</option>
+                    </select>
+                    <div class="error-message">يرجى الاختيار</div>
+                </div>
+
+                <div class="form-group" id="communityGroup" style="display: none;">
+                    <label>أبرز المخرجات</label>
+                    <textarea name="communityOutcomes" placeholder="صف أبرز مخرجات المشاركة المجتمعية..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>مبادرات تحسينية أخرى</label>
+                    <textarea name="otherInitiatives" placeholder="صف أي مبادرات أخرى..."></textarea>
+                </div>
+            </div>
+
+            <!-- القسم 5: قصص النجاح والتوصيات -->
+            <div class="form-section" data-section="5">
+                <h2 class="section-title">🌟 قصص النجاح والتوصيات</h2>
+                <p class="section-description">قصص النجاح والتوصيات المقترحة</p>
+
+                <!-- قسم قصص النجاح - مميز باللون الأصفر/الذهبي -->
+                <div class="section-box success-stories-box">
+                    <div class="section-subtitle">
+                        🌟 قصص النجاح
+                        <span class="section-badge badge-success">إيجابي</span>
+                    </div>
+                    <div id="successStoriesContainer" class="dynamic-items">
+                        <!-- سيتم إضافة قصص النجاح هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addSuccessStory()">
+                        + إضافة قصة نجاح
+                    </button>
+                </div>
+
+                <!-- قسم التوصيات العاجلة - مميز باللون الأحمر -->
+                <div class="section-box urgent-rec-box">
+                    <div class="section-subtitle">
+                        🚨 التوصيات العاجلة (خلال أسبوعين)
+                        <span class="section-badge badge-urgent">عاجل جداً</span>
+                    </div>
+                    <div id="urgentRecommendationsContainer" class="dynamic-items">
+                        <!-- سيتم إضافة التوصيات العاجلة هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addUrgentRecommendation()">
+                        + إضافة توصية عاجلة
+                    </button>
+                </div>
+
+                <!-- قسم التوصيات متوسطة المدى - مميز باللون الأزرق -->
+                <div class="section-box medium-rec-box">
+                    <div class="section-subtitle">
+                        📅 التوصيات متوسطة المدى
+                        <span class="section-badge badge-medium">متوسط المدى</span>
+                    </div>
+                    <div id="mediumRecommendationsContainer" class="dynamic-items">
+                        <!-- سيتم إضافة التوصيات متوسطة المدى هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addMediumRecommendation()">
+                        + إضافة توصية متوسطة المدى
+                    </button>
+                </div>
+
+                <!-- قسم الحلول الاستراتيجية - مميز باللون الأخضر -->
+                <div class="section-box strategic-box">
+                    <div class="section-subtitle">
+                        🎯 الحلول الاستراتيجية
+                        <span class="section-badge badge-strategic">استراتيجي</span>
+                    </div>
+                    <div id="strategicSolutionsContainer" class="dynamic-items">
+                        <!-- سيتم إضافة الحلول الاستراتيجية هنا ديناميكياً -->
+                    </div>
+                    <button type="button" class="add-btn" onclick="addStrategicSolution()">
+                        + إضافة حل استراتيجي
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">تقييم عام لأداء المركز (1-5)</label>
+                    <select name="overallRating" required>
+                        <option value="">اختر التقييم</option>
+                        <option value="1">1 - ضعيف جداً</option>
+                        <option value="2">2 - ضعيف</option>
+                        <option value="3">3 - متوسط</option>
+                        <option value="4">4 - جيد</option>
+                        <option value="5">5 - ممتاز</option>
+                    </select>
+                    <div class="error-message">يرجى اختيار التقييم</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">هل توصي باستمرار الدعم؟</label>
+                    <select name="continueSupport" required>
+                        <option value="">اختر</option>
+                        <option value="نعم - بأولوية عالية">نعم - بأولوية عالية</option>
+                        <option value="نعم - بأولوية متوسطة">نعم - بأولوية متوسطة</option>
+                        <option value="لا - يحتاج إعادة تقييم">لا - يحتاج إعادة تقييم</option>
+                    </select>
+                    <div class="error-message">يرجى الاختيار</div>
+                </div>
+
+                <div class="form-group">
+                    <label>ملاحظات ختامية</label>
+                    <textarea name="finalNotes" placeholder="أية ملاحظات إضافية..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" name="dataAccuracy" required style="width: auto; margin: 0;">
+                        <span class="required">أقر بأن البيانات دقيقة وصحيحة</span>
+                    </label>
+                    <div class="error-message">يرجى تأكيد دقة البيانات</div>
+                </div>
+            </div>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✅</div>
+            <h2>تم الإرسال بنجاح!</h2>
+            <p>شكراً لك. تم حفظ البيانات بنجاح.</p>
+            
+            <div class="export-buttons">
+                <button class="export-btn export-pdf" onclick="exportToPDF()">📄 تصدير PDF احترافي</button>
+                <button class="export-btn export-email" onclick="exportToEmail()">📧 إرسال كبريد إلكتروني</button>
+                <button class="export-btn export-json" onclick="exportToJSON()">💾 تصدير JSON</button>
+            </div>
+            
+            <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">إدخال تقرير جديد</button>
+        </div>
+
+        <div class="btn-container" id="btnContainer">
+            <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>السابق</button>
+            <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">التالي</button>
+        </div>
+    </div>
+
+    <!-- محتوى PDF المخفي -->
+    <div id="pdfContent">
+        <div class="pdf-header">
+            <div class="pdf-title">📊 التقرير التحليلي لنتائج ضبط الجودة</div>
+            <div class="pdf-period" id="pdfPeriod"></div>
+        </div>
+        <div id="pdfBody"></div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+        let challengeCount = 0;
+        let securityRiskCount = 0;
+        let competitionCount = 0;
+        let successStoryCount = 0;
+        let urgentRecCount = 0;
+        let mediumRecCount = 0;
+        let strategicSolutionCount = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            setupEventListeners();
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('[name="entryDate"]').value = today;
+        });
+
+        function setupEventListeners() {
+            document.getElementById('jobTitle').addEventListener('change', function() {
+                const otherDiv = document.getElementById('jobTitleOther');
+                if (this.value === 'أخرى') {
+                    otherDiv.classList.add('show');
+                    otherDiv.querySelector('input').required = true;
+                } else {
+                    otherDiv.classList.remove('show');
+                    otherDiv.querySelector('input').required = false;
+                }
+            });
+
+            document.getElementById('region').addEventListener('change', function() {
+                const otherDiv = document.getElementById('regionOther');
+                if (this.value === 'أخرى') {
+                    otherDiv.classList.add('show');
+                    otherDiv.querySelector('input').required = true;
+                } else {
+                    otherDiv.classList.remove('show');
+                    otherDiv.querySelector('input').required = false;
+                }
+            });
+
+            document.querySelectorAll('input[name="activeLearning"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const strategyGroup = document.getElementById('strategyGroup');
+                    strategyGroup.style.display = this.value === 'نعم' ? 'block' : 'none';
+                });
+            });
+
+            document.getElementById('communityParticipation').addEventListener('change', function() {
+                const communityGroup = document.getElementById('communityGroup');
+                communityGroup.style.display = this.value !== 'لا' ? 'block' : 'none';
+            });
+        }
+
+        // إضافة تحدي
+        function addChallenge() {
+            challengeCount++;
+            const container = document.getElementById('challengesContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">تحدي #${challengeCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">وصف التحدي</label>
+                    <textarea name="challenge_${challengeCount}" required placeholder="صف التحدي..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>النسبة المئوية (إن وجدت)</label>
+                    <div class="percentage-input">
+                        <input type="number" name="challengePercent_${challengeCount}" min="0" max="100" placeholder="0-100">
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // إضافة خطر أمني
+        function addSecurityRisk() {
+            securityRiskCount++;
+            const container = document.getElementById('securityRisksContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">خطر أمني #${securityRiskCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">نوع الخطر</label>
+                    <select name="securityType_${securityRiskCount}" required>
+                        <option value="">اختر النوع</option>
+                        <option value="اعتداء لفظي">اعتداء لفظي</option>
+                        <option value="اعتداء جسدي">اعتداء جسدي</option>
+                        <option value="تخريب ممتلكات">تخريب ممتلكات</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="required">وصف الحادث</label>
+                    <textarea name="securityDesc_${securityRiskCount}" required placeholder="صف تفاصيل الحادث..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // إضافة مسابقة
+        function addCompetition() {
+            competitionCount++;
+            const container = document.getElementById('competitionsContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">مسابقة #${competitionCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">اسم المسابقة</label>
+                    <input type="text" name="compName_${competitionCount}" required placeholder="مثال: الحناجر الذهبية">
+                </div>
+                <div class="form-group">
+                    <label>تفاصيل إضافية</label>
+                    <input type="text" name="compDetails_${competitionCount}" placeholder="تفاصيل إضافية...">
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // إضافة قصة نجاح
+        function addSuccessStory() {
+            successStoryCount++;
+            const container = document.getElementById('successStoriesContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">قصة نجاح #${successStoryCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">اسم المبادرة/المركز</label>
+                    <input type="text" name="storyName_${successStoryCount}" required>
+                </div>
+                <div class="form-group">
+                    <label class="required">التحدي</label>
+                    <textarea name="storyChallenge_${successStoryCount}" required placeholder="التحدي الذي تم تجاوزه..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="required">الحل الإبداعي</label>
+                    <textarea name="storySolution_${successStoryCount}" required placeholder="الحل المُطبق..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="required">الأثر</label>
+                    <textarea name="storyImpact_${successStoryCount}" required placeholder="الأثر على العملية التعليمية..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // إضافة توصية عاجلة
+        function addUrgentRecommendation() {
+            urgentRecCount++;
+            const container = document.getElementById('urgentRecommendationsContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">توصية عاجلة #${urgentRecCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">التوصية</label>
+                    <textarea name="urgentRec_${urgentRecCount}" required placeholder="صف التوصية العاجلة..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // إضافة توصية متوسطة المدى
+        function addMediumRecommendation() {
+            mediumRecCount++;
+            const container = document.getElementById('mediumRecommendationsContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">توصية متوسطة المدى #${mediumRecCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">التوصية</label>
+                    <textarea name="mediumRec_${mediumRecCount}" required placeholder="صف التوصية متوسطة المدى..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        // إضافة حل استراتيجي
+        function addStrategicSolution() {
+            strategicSolutionCount++;
+            const container = document.getElementById('strategicSolutionsContainer');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">حل استراتيجي #${strategicSolutionCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <div class="form-group">
+                    <label class="required">الحل الاستراتيجي</label>
+                    <textarea name="strategicSolution_${strategicSolutionCount}" required placeholder="صف الحل الاستراتيجي..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        function changeStep(direction) {
+            if (direction === 1 && !validateCurrentStep()) {
+                return;
+            }
+
+            document.querySelector(`.form-section[data-section="${currentStep}"]`).classList.remove('active');
+            currentStep += direction;
+            document.querySelector(`.form-section[data-section="${currentStep}"]`).classList.add('active');
+
+            document.getElementById('prevBtn').disabled = currentStep === 1;
+            
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentStep === totalSteps) {
+                nextBtn.textContent = 'إرسال';
+                nextBtn.onclick = submitForm;
+            } else {
+                nextBtn.textContent = 'التالي';
+                nextBtn.onclick = () => changeStep(1);
+            }
+
+            updateProgress();
+            document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function validateCurrentStep() {
+            const currentSection = document.querySelector(`.form-section[data-section="${currentStep}"]`);
+            const requiredFields = currentSection.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                const formGroup = field.closest('.form-group');
+                
+                if (field.type === 'radio') {
+                    const radioName = field.name;
+                    const checkedRadio = currentSection.querySelector(`input[name="${radioName}"]:checked`);
+                    if (!checkedRadio) {
+                        isValid = false;
+                        formGroup.classList.add('error');
+                    } else {
+                        formGroup.classList.remove('error');
+                    }
+                } else if (!field.value.trim()) {
+                    isValid = false;
+                    formGroup.classList.add('error');
+                } else {
+                    formGroup.classList.remove('error');
+                }
+            });
+
+            if (!isValid) {
+                alert('يرجى ملء جميع الحقول الإلزامية (*)');
+            }
+
+            return isValid;
+        }
+
+        function updateProgress() {
+            const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            document.querySelectorAll('.step').forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNum === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                    step.innerHTML = '✓';
+                } else {
+                    step.innerHTML = stepNum;
+                }
+            });
+
+            document.getElementById('currentStepNum').textContent = currentStep;
+        }
+
+        function submitForm() {
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            const formData = new FormData(document.getElementById('qualityForm'));
+            const data = Object.fromEntries(formData.entries());
+
+            console.log('بيانات النموذج:', data);
+
+            document.getElementById('qualityForm').style.display = 'none';
+            document.getElementById('btnContainer').style.display = 'none';
+            document.querySelector('.progress-container').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+        }
+
+        // إنشاء محتوى PDF
+        function preparePDFContent() {
+            const formData = new FormData(document.getElementById('qualityForm'));
+            const data = Object.fromEntries(formData.entries());
+            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
+            
+            document.getElementById('pdfPeriod').textContent = `الفترة: ${period}`;
+            
+            let html = `
+                <div class="pdf-section">
+                    <div class="pdf-section-title">📋 البيانات الأساسية</div>
+                    <div class="pdf-item"><span class="pdf-label">اسم المختص:</span> <span class="pdf-value">${data.specialistName || ''}</span></div>
+                    <div class="pdf-item"><span class="pdf-label">المسمى الوظيفي:</span> <span class="pdf-value">${data.jobTitle || ''}</span></div>
+                    <div class="pdf-item"><span class="pdf-label">المنطقة التعليمية:</span> <span class="pdf-value">${data.region || ''}</span></div>
+                    <div class="pdf-item"><span class="pdf-label">اسم المركز:</span> <span class="pdf-value">${data.centerName || ''}</span></div>
+                </div>
+                
+                <div class="pdf-section">
+                    <div class="pdf-section-title">📊 الإحصائيات</div>
+                    <div class="pdf-item"><span class="pdf-label">عدد الموظفين:</span> <span class="pdf-value">${data.staffCount || ''}</span></div>
+                    <div class="pdf-item"><span class="pdf-label">عدد الطلبة:</span> <span class="pdf-value">${data.studentCount || ''}</span></div>
+                    <div class="pdf-item"><span class="pdf-label">نسبة الحضور:</span> <span class="pdf-value">${data.attendanceRate || ''}%</span></div>
+                </div>
+            `;
+
+            // إضافة التحديات
+            html += `<div class="pdf-section"><div class="pdf-section-title">⚠️ التحديات</div>`;
+            for (let i = 1; i <= challengeCount; i++) {
+                if (data[`challenge_${i}`]) {
+                    html += `<div class="pdf-item"><strong>تحدي ${i}:</strong> ${data[`challenge_${i}`]}</div>`;
+                }
+            }
+            html += `</div>`;
+
+            // إضافة قصص النجاح
+            html += `<div class="pdf-section"><div class="pdf-section-title">🌟 قصص النجاح</div>`;
+            for (let i = 1; i <= successStoryCount; i++) {
+                if (data[`storyName_${i}`]) {
+                    html += `<div class="pdf-item"><strong>${data[`storyName_${i}`]}</strong><br>`;
+                    html += `التحدي: ${data[`storyChallenge_${i}`] || ''}<br>`;
+                    html += `الحل: ${data[`storySolution_${i}`] || ''}<br>`;
+                    html += `الأثر: ${data[`storyImpact_${i}`] || ''}</div>`;
+                }
+            }
+            html += `</div>`;
+
+            // إضافة التوصيات
+            html += `<div class="pdf-section"><div class="pdf-section-title">🚨 التوصيات العاجلة</div>`;
+            for (let i = 1; i <= urgentRecCount; i++) {
+                if (data[`urgentRec_${i}`]) {
+                    html += `<div class="pdf-item">${data[`urgentRec_${i}`]}</div>`;
+                }
+            }
+            html += `</div>`;
+
+            document.getElementById('pdfBody').innerHTML = html;
+        }
+
+        // تصدير إلى PDF احترافي
+        function exportToPDF() {
+            preparePDFContent();
+            const element = document.getElementById('pdfContent');
+            element.classList.add('show');
+            
+            const opt = {
+                margin: 1,
+                filename: 'quality-report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.classList.remove('show');
+            });
+        }
+
+        // تصدير إلى بريد إلكتروني
+        function exportToEmail() {
+            const formData = new FormData(document.getElementById('qualityForm'));
+            const data = Object.fromEntries(formData.entries());
+            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
+            
+            let emailBody = `التقرير التحليلي لنتائج ضبط الجودة\n`;
+            emailBody += `الفترة: ${period}\n\n`;
+            
+            emailBody += `البيانات الأساسية:\n`;
+            emailBody += `- اسم المختص: ${data.specialistName}\n`;
+            emailBody += `- المسمى الوظيفي: ${data.jobTitle}\n`;
+            emailBody += `- المنطقة التعليمية: ${data.region}\n`;
+            emailBody += `- اسم المركز: ${data.centerName}\n\n`;
+            
+            emailBody += `الإحصائيات:\n`;
+            emailBody += `- عدد الموظفين: ${data.staffCount}\n`;
+            emailBody += `- عدد الطلبة: ${data.studentCount}\n`;
+            emailBody += `- نسبة الحضور: ${data.attendanceRate}%\n\n`;
+            
+            emailBody += `التحديات:\n`;
+            for (let i = 1; i <= challengeCount; i++) {
+                if (data[`challenge_${i}`]) {
+                    emailBody += `- ${data[`challenge_${i}`]}\n`;
+                }
+            }
+            emailBody += `\n`;
+            
+            emailBody += `التوصيات العاجلة:\n`;
+            for (let i = 1; i <= urgentRecCount; i++) {
+                if (data[`urgentRec_${i}`]) {
+                    emailBody += `- ${data[`urgentRec_${i}`]}\n`;
+                }
+            }
+            
+            emailBody += `\nالتقييم العام: ${data.overallRating}/5\n`;
+            emailBody += `استمرار الدعم: ${data.continueSupport}\n`;
+            
+            const subject = encodeURIComponent('تقرير ضبط الجودة - ' + data.centerName);
+            const body = encodeURIComponent(emailBody);
+            
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
+        // تصدير إلى JSON
+        function exportToJSON() {
+            const formData = new FormData(document.getElementById('qualityForm'));
+            const data = Object.fromEntries(formData.entries());
+            data.period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
+            
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quality-report.json';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('qualityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+-- ⚠️ مُهمَل — استخدم supabase/migrations/ و npm run db:migrate (DATABASE-MIGRATIONS.md)
 -- ============================================
 -- صلاحيات متعددة المستويات + سجل البريد
 -- نفّذ في Supabase SQL Editor

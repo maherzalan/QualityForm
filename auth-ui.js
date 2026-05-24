@@ -234,6 +234,11 @@
         }
 
         try {
+            if (typeof ensureDatabaseReady === 'function') {
+                const health = await ensureDatabaseReady({ silent: false });
+                if (typeof showDbBanner === 'function') showDbBanner(health);
+            }
+
             const session = await getCurrentUser();
             updateAuthUI(session);
             if (session?.user && typeof loadPreviousReports === 'function') {

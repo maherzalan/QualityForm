@@ -1,0 +1,17 @@
+{
+  "name": "quality-assurance-unrwa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "نظام ضبط الجودة — UNRWA",
+  "scripts": {
+    "db:migrate": "node scripts/run-migrations.js",
+    "db:status": "node scripts/run-migrations.js --status",
+    "db:seed": "node scripts/run-migrations.js --only seed",
+    "prestart": "node scripts/run-migrations.js 2>nul || exit 0",
+    "start": "node scripts/dev-server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.1"
+  }
+}

@@ -20,6 +20,39 @@
     font-weight: 700;
 }
 
+.db-health-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99998;
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    border-bottom: 2px solid #ef4444;
+}
+
+.db-health-banner code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.db-health-banner button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    color: inherit;
+}
+
 .hidden {
     display: none !important;
 }

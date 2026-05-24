@@ -1,3 +1,4 @@
+-- ⚠️ مُهمَل — استخدم supabase/migrations/ و npm run db:migrate (DATABASE-MIGRATIONS.md)
 -- ============================================
 -- ترقية نظام الصلاحيات v2
 -- نفّذ بعد supabase-rbac-migration.sql

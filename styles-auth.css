@@ -176,6 +176,25 @@
     font-size: 22px;
 }
 
+.btn-refresh-reports {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: white;
+    color: #1e3c72;
+    border: 2px solid #667eea;
+    transition: all 0.2s;
+}
+
+.btn-refresh-reports:hover {
+    background: #667eea;
+    color: white;
+}
+
 .reports-empty {
     text-align: center;
     padding: 32px;

@@ -841,7 +841,8 @@
                 <button class="export-btn export-json" onclick="exportToJSON()">💾 JSON</button>
                 <button class="export-btn export-print" onclick="printReport()">🖨️ طباعة</button>
             </div>
-            <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 30px;">تقرير جديد</button>
+            <button class="btn btn-primary" onclick="startNewReport()" style="margin-top: 30px;">تقرير جديد</button>
+            <button type="button" class="btn btn-secondary" onclick="scrollToReports()" style="margin-top: 12px;">📂 عرض تقاريري المحفوظة</button>
         </div>
 
         <div class="btn-container" id="btnContainer">
@@ -852,6 +853,7 @@
         <section id="previousReports" class="reports-section">
             <div class="reports-section-header">
                 <h2>📂 التقارير السابقة</h2>
+                <button type="button" class="btn-refresh-reports" onclick="loadPreviousReports()" title="تحديث القائمة">🔄 تحديث</button>
             </div>
             <p id="reportsEmpty" class="reports-empty hidden">لا توجد تقارير محفوظة بعد. أرسل تقريراً جديداً ليظهر هنا.</p>
             <div id="reportsList"></div>
@@ -1268,6 +1270,20 @@
             div.querySelector('textarea').focus();
         }
 
+        function scrollToReports() {
+            const section = document.getElementById('previousReports');
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function startNewReport() {
+            location.reload();
+        }
+
+        window.scrollToReports = scrollToReports;
+        window.startNewReport = startNewReport;
+
         async function submitForm() {
             if (!validateCurrentStep()) return;
             if (!window.currentUser) {
@@ -1294,6 +1310,7 @@
                 if (typeof loadPreviousReports === 'function') {
                     loadPreviousReports().catch(console.error);
                 }
+                setTimeout(() => scrollToReports(), 400);
             } catch (err) {
                 console.error('Save report error:', err);
                 Swal.fire('خطأ', err.message || 'تعذر حفظ التقرير', 'error');

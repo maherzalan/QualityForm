@@ -123,7 +123,7 @@
                         <p><strong>نسبة الحضور:</strong> ${escapeHtml(r.attendance_rate)}%</p>
                         <p><strong>الغرف الصفية:</strong> ${escapeHtml(r.classrooms_count)}</p>
                         <p><strong>الخيام:</strong> ${escapeHtml(r.tents_count)}</p>
-                    `, '#764ba2')}
+                    `, '#764ba2'))}
                     ${sectionBlock('⚠️ التحديات', '#f59e0b', data.challenges.map((c, i) => detailCard(
                         `<strong>التحدي ${i + 1}:</strong> ${escapeHtml(c.description)}${c.percentage != null ? `<br><strong>النسبة:</strong> ${escapeHtml(c.percentage)}%` : ''}`,
                         '#f59e0b'

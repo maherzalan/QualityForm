@@ -1,0 +1,399 @@
+/* أنماط المصادقة وقائمة التقارير */
+
+.file-protocol-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 2px solid #f59e0b;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.file-protocol-banner a {
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* شريط المصادقة */
+.auth-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.auth-bar-title {
+    font-weight: 700;
+    color: #1e3c72;
+    font-size: 15px;
+}
+
+.auth-guest-actions,
+.auth-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.auth-user-name {
+    font-weight: 600;
+    color: #2d3748;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    border: 1px solid #e2e8f0;
+}
+
+.auth-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.auth-btn-login {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.auth-btn-register {
+    background: white;
+    color: #1e3c72;
+    border: 2px solid #667eea;
+}
+
+.auth-btn-logout {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.auth-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* رسالة تسجيل الدخول */
+.login-prompt {
+    padding: 60px 30px;
+    text-align: center;
+    background: white;
+}
+
+.login-prompt-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+}
+
+.login-prompt h2 {
+    color: #1e3c72;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.login-prompt p {
+    color: #718096;
+    margin-bottom: 24px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
+.demo-credentials {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 0 auto 20px;
+    max-width: 420px;
+    color: #1e40af;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.demo-credentials p {
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.demo-credentials small,
+.swal-demo-hint small {
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.swal-demo-hint {
+    margin-top: 4px;
+    text-align: right;
+}
+
+.login-prompt-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* قائمة التقارير السابقة */
+.reports-section {
+    padding: 32px 40px 40px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.reports-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.reports-section-header h2 {
+    color: #1e3c72;
+    font-size: 22px;
+}
+
+.reports-empty {
+    text-align: center;
+    padding: 32px;
+    color: #718096;
+    background: white;
+    border-radius: 16px;
+    border: 2px dashed #e2e8f0;
+}
+
+.reports-loading {
+    text-align: center;
+    color: #718096;
+    padding: 20px;
+}
+
+#reportsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.report-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.report-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.report-card-title {
+    color: #1e3c72;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.report-card-rating {
+    font-size: 12px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 4px 10px;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+
+.report-card-meta p {
+    color: #4a5568;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.report-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.report-card-stats span {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.report-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+.btn-report-view,
+.btn-report-delete {
+    flex: 1;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-report-view {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-report-delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.btn-report-view:hover,
+.btn-report-delete:hover {
+    opacity: 0.9;
+}
+
+/* نوافذ SweetAlert2 */
+.swal-rtl {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif !important;
+}
+
+.swal-wide {
+    width: 90% !important;
+    max-width: 520px !important;
+}
+
+.swal-details {
+    max-width: 720px !important;
+}
+
+.swal-auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: right;
+}
+
+.swal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.swal-field span {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.swal2-input,
+.swal2-select {
+    width: 100% !important;
+    margin: 0 !important;
+    font-family: inherit !important;
+    border-radius: 10px !important;
+}
+
+.report-details {
+    max-height: 65vh;
+    overflow-y: auto;
+    text-align: right;
+    padding: 4px;
+}
+
+.detail-section {
+    margin-bottom: 16px;
+    border-right: 4px solid #667eea;
+    padding-right: 12px;
+}
+
+.detail-section h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.detail-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-card {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 10px;
+    border-right: 3px solid #667eea;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #334155;
+}
+
+.detail-card p {
+    margin: 4px 0;
+}
+
+@media (max-width: 768px) {
+    .auth-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .auth-guest-actions,
+    .auth-user-info {
+        justify-content: center;
+    }
+
+    .reports-section {
+        padding: 24px 20px;
+    }
+
+    #reportsList {
+        grid-template-columns: 1fr;
+    }
+
+    .report-card-actions {
+        flex-direction: column;
+    }
+}

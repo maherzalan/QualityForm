@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نموذج تفريغ بيانات تقرير ضبط الجودة</title>
+    <title>نموذج ضبط الجودة - نظام احترافي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link id="cairo-font" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles-auth.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
             margin: 0;
@@ -13,61 +20,57 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            line-height: 1.6;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 30px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
+        /* Header */
         .header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 30px 30px;
+            padding: 40px 30px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
-            font-size: 26px;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            font-size: 15px;
-            opacity: 0.9;
+            font-size: 32px;
+            margin-bottom: 10px;
         }
 
         .period-input {
-            background: rgba(255,255,255,0.15);
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 12px 25px;
+            border-radius: 50px;
+            margin-top: 20px;
+            display: inline-flex;
+            gap: 15px;
         }
 
         .period-input input {
             background: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
+            padding: 8px 20px;
+            border-radius: 8px;
             text-align: center;
-            margin: 0 5px;
+            font-weight: bold;
         }
 
+        /* Progress Bar */
         .progress-container {
-            background: #f0f4f8;
-            padding: 20px 30px;
-            border-bottom: 3px solid #e1e8ed;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 25px 40px;
         }
 
         .progress-bar {
@@ -75,7 +78,7 @@
             justify-content: space-between;
             align-items: center;
             position: relative;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .progress-line {
@@ -83,49 +86,58 @@
             top: 50%;
             left: 0;
             right: 0;
-            height: 4px;
-            background: #d1d9e0;
+            height: 6px;
+            background: #cbd5e0;
             transform: translateY(-50%);
             z-index: 0;
+            border-radius: 10px;
         }
 
         .progress-line-fill {
             height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             width: 0%;
-            transition: width 0.5s ease;
+            transition: width 0.5s;
+            border-radius: 10px;
         }
 
         .step {
-            width: 36px;
-            height: 36px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background: #d1d9e0;
+            background: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: #666;
+            color: #718096;
             position: relative;
             z-index: 1;
-            transition: all 0.3s ease;
-            border: 3px solid white;
-            font-size: 14px;
+            transition: all 0.3s;
+            border: 3px solid #cbd5e0;
+            font-size: 18px;
+            cursor: pointer;
         }
 
         .step.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            transform: scale(1.1);
+            transform: scale(1.15);
+            border-color: white;
         }
 
         .step.completed {
             background: #10b981;
             color: white;
+            border-color: #10b981;
         }
 
+        /* Form */
         .form-container {
-            padding: 35px 30px;
+            padding: 40px;
+            background: white;
+            max-height: 550px;
+            overflow-y: auto;
         }
 
         .form-section {
@@ -143,24 +155,27 @@
         }
 
         .section-title {
-            font-size: 22px;
+            font-size: 28px;
             color: #1e3c72;
-            margin-bottom: 8px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #667eea;
-            display: flex;
+            margin-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #667eea;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .section-description {
-            color: #666;
-            margin-bottom: 25px;
+            color: #718096;
+            margin-bottom: 30px;
             font-size: 14px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
         }
 
         .form-group {
-            margin-bottom: 22px;
+            margin-bottom: 25px;
         }
 
         label {
@@ -168,810 +183,650 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #2d3748;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .required::after {
             content: ' *';
-            color: #e53e3e;
+            color: #f56565;
         }
 
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        input[type="email"],
-        select,
-        textarea {
+        input, select, textarea {
             width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 14px;
             font-family: inherit;
-            transition: all 0.3s ease;
-            background: #f8fafc;
+            transition: all 0.3s;
+            background: #f7fafc;
         }
 
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="date"]:focus,
-        select:focus,
-        textarea:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
             background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
         .grid-2 {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 18px;
+            gap: 20px;
         }
 
-        .btn {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #e1e8ed;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 35px;
-            padding-top: 25px;
-            border-top: 2px solid #e1e8ed;
-        }
-
+        /* Dynamic Items */
         .dynamic-items {
             margin-top: 15px;
         }
 
         .dynamic-item {
-            background: #f8fafc;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            position: relative;
+            background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .dynamic-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #e1e8ed;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         .dynamic-item-title {
-            font-weight: 600;
+            font-weight: 700;
             color: #1e3c72;
+            font-size: 16px;
         }
 
         .remove-btn {
             background: #fee2e2;
             color: #ef4444;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 6px 18px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-
-        .remove-btn:hover {
-            background: #fecaca;
+            font-weight: 600;
         }
 
         .add-btn {
-            background: #d1fae5;
-            color: #059669;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
             border: 2px dashed #10b981;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
             width: 100%;
             margin-top: 10px;
+        }
+
+        /* Colored Boxes */
+        .section-box {
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .success-stories-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+        }
+
+        .urgent-rec-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid #ef4444;
+        }
+
+        .medium-rec-box {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+        }
+
+        .strategic-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+        }
+
+        .challenges-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .security-box {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid #ef4444;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .competitions-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section-subtitle {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s;
         }
 
-        .add-btn:hover {
-            background: #a7f3d0;
-            border-style: solid;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
-        .checkbox-group,
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 8px;
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
         }
 
-        .checkbox-item,
-        .radio-item {
+        .btn-container {
             display: flex;
+            justify-content: space-between;
+            padding: 25px 40px;
+            background: #f7fafc;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .export-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
             align-items: center;
-            padding: 10px 14px;
-            background: #f8fafc;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            gap: 10px;
         }
 
-        .checkbox-item:hover,
-        .radio-item:hover {
-            background: #edf2f7;
-        }
-
-        .checkbox-item input,
-        .radio-item input {
-            margin-left: 10px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .other-input {
-            margin-top: 10px;
-            display: none;
-        }
-
-        .other-input.show {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .export-pdf { background: #ef4444; color: white; }
+        .export-email { background: #3b82f6; color: white; }
+        .export-json { background: #10b981; color: white; }
+        .export-print { background: #8b5cf6; color: white; }
 
         .success-message {
             display: none;
             text-align: center;
-            padding: 50px 30px;
+            padding: 60px 40px;
+            background: white;
         }
 
         .success-icon {
-            font-size: 70px;
-            color: #10b981;
-            margin-bottom: 20px;
+            font-size: 80px;
+            animation: bounce 0.6s ease;
         }
 
-        .percentage-input {
-            position: relative;
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
-        .percentage-input input {
-            padding-left: 45px;
-        }
-
-        .percentage-input::after {
-            content: '%';
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .error-message {
-            color: #e53e3e;
-            font-size: 12px;
-            margin-top: 5px;
+        .other-input {
             display: none;
+            margin-top: 10px;
+        }
+
+        .other-input.show {
+            display: block;
+        }
+
+        .activities-box {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border: 2px solid #8b5cf6;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .community-box {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .initiatives-box {
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+            border: 2px solid #f97316;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .accuracy-ack {
+            margin-top: 30px;
+        }
+
+        .accuracy-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px 28px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #cbd5e1;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .accuracy-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+
+        .accuracy-card.checked,
+        .accuracy-ack:not(.error) .accuracy-card:has(input:checked) {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: #10b981;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .accuracy-ack.error .accuracy-card {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        }
+
+        .accuracy-card input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            margin-top: 2px;
+            accent-color: #10b981;
+            cursor: pointer;
+        }
+
+        .accuracy-text strong {
+            display: block;
+            font-size: 17px;
+            color: #1e3c72;
+            margin-bottom: 6px;
+        }
+
+        .accuracy-text span {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .percent-hint {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-item {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
         }
 
         .form-group.error input,
         .form-group.error select,
         .form-group.error textarea {
-            border-color: #e53e3e;
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
         }
 
         .form-group.error .error-message {
             display: block;
         }
 
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .export-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .export-pdf {
-            background: #ef4444;
-            color: white;
-        }
-
-        .export-email {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .export-json {
-            background: #10b981;
-            color: white;
-        }
-
-        .export-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        /* تمييز الأقسام في صفحة النجاح والتوصيات */
-        .section-box {
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 2px solid;
-        }
-
-        .success-stories-box {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-color: #f59e0b;
-        }
-
-        .success-stories-box .section-subtitle {
-            color: #92400e;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .urgent-rec-box {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            border-color: #ef4444;
-        }
-
-        .urgent-rec-box .section-subtitle {
-            color: #991b1b;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .medium-rec-box {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            border-color: #3b82f6;
-        }
-
-        .medium-rec-box .section-subtitle {
-            color: #1e40af;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .strategic-box {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            border-color: #10b981;
-        }
-
-        .strategic-box .section-subtitle {
-            color: #065f46;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-right: auto;
-        }
-
-        .badge-success {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .badge-urgent {
-            background: #ef4444;
-            color: white;
-        }
-
-        .badge-medium {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .badge-strategic {
-            background: #10b981;
-            color: white;
-        }
-
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 20px;
-            }
-
             .grid-2 {
                 grid-template-columns: 1fr;
             }
-
             .btn-container {
                 flex-direction: column-reverse;
-                gap: 10px;
+                gap: 12px;
             }
-
             .btn {
                 width: 100%;
             }
-
-            .form-container {
-                padding: 25px 20px;
+            .step {
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
             }
-
-            .export-buttons {
-                flex-direction: column;
-            }
-
-            .export-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        /* PDF Export Styles */
-        #pdfContent {
-            display: none;
-            background: white;
-            padding: 40px;
-        }
-
-        #pdfContent.show {
-            display: block;
-        }
-
-        .pdf-header {
-            text-align: center;
-            border-bottom: 3px solid #1e3c72;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .pdf-title {
-            font-size: 28px;
-            color: #1e3c72;
-            margin-bottom: 10px;
-        }
-
-        .pdf-period {
-            font-size: 16px;
-            color: #666;
-        }
-
-        .pdf-section {
-            margin-bottom: 30px;
-        }
-
-        .pdf-section-title {
-            font-size: 20px;
-            color: #1e3c72;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-
-        .pdf-item {
-            margin-bottom: 12px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 6px;
-        }
-
-        .pdf-label {
-            font-weight: 700;
-            color: #2d3748;
-        }
-
-        .pdf-value {
-            color: #4a5568;
         }
     </style>
 </head>
 <body>
+    <div id="fileProtocolBanner" class="file-protocol-banner hidden" role="alert">
+        ⚠️ لا تفتح الملف مباشرة من القرص (file://). شغّل <strong>start-server.bat</strong> ثم افتح
+        <a href="http://localhost:5500" target="_blank" rel="noopener">http://localhost:5500</a>
+    </div>
     <div class="container">
         <div class="header">
             <h1>📊 نموذج تفريغ بيانات تقرير ضبط الجودة</h1>
+            <p>نظام متكامل لتوثيق وتحليل جودة الأداء التعليمي</p>
             <div class="period-input">
-                <span>الفترة:</span>
-                <input type="text" id="periodStart" value="ديسمبر 2025" placeholder="بداية الفترة">
-                <span>-</span>
-                <input type="text" id="periodEnd" value="أبريل 2026" placeholder="نهاية الفترة">
+                <span>📅 الفترة:</span>
+                <input type="text" id="periodStart" value="ديسمبر 2025">
+                <span>إلى</span>
+                <input type="text" id="periodEnd" value="أبريل 2026">
             </div>
         </div>
+
+        <div id="authBar" class="auth-bar">
+            <span class="auth-bar-title">🔐 حساب المستخدم</span>
+            <div id="authGuestActions" class="auth-guest-actions">
+                <button type="button" class="auth-btn auth-btn-login" onclick="showLoginModal()">تسجيل الدخول</button>
+                <button type="button" class="auth-btn auth-btn-register" onclick="showRegisterModal()">إنشاء حساب</button>
+            </div>
+            <div id="authUserInfo" class="auth-user-info hidden">
+                <span id="authUserName" class="auth-user-name">مستخدم</span>
+                <button type="button" class="auth-btn auth-btn-logout" onclick="handleSignOut()">تسجيل خروج</button>
+            </div>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt">
+            <div class="login-prompt-icon">🔒</div>
+            <h2>يرجى تسجيل الدخول أولاً</h2>
+            <p>يجب تسجيل الدخول أو إنشاء حساب للوصول إلى نموذج ضبط الجودة وحفظ التقارير في قاعدة البيانات.</p>
+            <div class="demo-credentials">
+                <strong>🔑 حساب تجريبي (بعد تنفيذ supabase-seed.sql):</strong>
+                <p dir="ltr">demo@gmail.com / Demo@123456789</p>
+            </div>
+            <div class="login-prompt-actions">
+                <button type="button" class="auth-btn auth-btn-login" onclick="showLoginModal()">تسجيل الدخول</button>
+                <button type="button" class="auth-btn auth-btn-register" onclick="showRegisterModal()">إنشاء حساب</button>
+            </div>
+        </div>
+
+        <div id="appContent" class="hidden">
 
         <div class="progress-container">
             <div class="progress-bar">
                 <div class="progress-line">
                     <div class="progress-line-fill" id="progressFill"></div>
                 </div>
-                <div class="step active" data-step="1">1</div>
-                <div class="step" data-step="2">2</div>
-                <div class="step" data-step="3">3</div>
-                <div class="step" data-step="4">4</div>
-                <div class="step" data-step="5">5</div>
+                <div class="step active" data-step="1" onclick="goToStep(1)">1</div>
+                <div class="step" data-step="2" onclick="goToStep(2)">2</div>
+                <div class="step" data-step="3" onclick="goToStep(3)">3</div>
+                <div class="step" data-step="4" onclick="goToStep(4)">4</div>
+                <div class="step" data-step="5" onclick="goToStep(5)">5</div>
             </div>
-            <p style="text-align: center; color: #666; font-size: 13px;">
-                الخطوة <span id="currentStepNum">1</span> من <span id="totalSteps">5</span>
-            </p>
+            <p style="text-align: center; margin-top: 15px;">الخطوة <span id="currentStepNum">1</span> من 5</p>
         </div>
 
         <form id="qualityForm" class="form-container">
-            <!-- القسم 1: البيانات الأساسية -->
+            <!-- القسم 1 -->
             <div class="form-section active" data-section="1">
                 <h2 class="section-title">📋 البيانات الأساسية</h2>
-                <p class="section-description">المعلومات الأساسية عن التقرير والمختص</p>
-
                 <div class="form-group">
-                    <label class="required">اسم المختص</label>
-                    <input type="text" name="specialistName" required>
-                    <div class="error-message">يرجى إدخال اسم المختص</div>
+                    <label class="required">👤 اسم المختص</label>
+                    <input type="text" name="specialistName" id="specialistName" required>
                 </div>
-
                 <div class="grid-2">
                     <div class="form-group">
-                        <label class="required">المسمى الوظيفي</label>
+                        <label class="required">💼 المسمى الوظيفي</label>
                         <select name="jobTitle" id="jobTitle" required>
-                            <option value="">اختر المسمى الوظيفي</option>
+                            <option value="">اختر</option>
                             <option value="منسق ضبط جودة">منسق ضبط جودة</option>
                             <option value="مشرف تربوي">مشرف تربوي</option>
                             <option value="مدير مركز">مدير مركز</option>
-                            <option value="باحث ميداني">باحث ميداني</option>
                             <option value="أخرى">أخرى</option>
                         </select>
-                        <div class="error-message">يرجى اختيار المسمى الوظيفي</div>
                         <div class="other-input" id="jobTitleOther">
-                            <input type="text" placeholder="حدد المسمى الوظيفي" name="jobTitleOther">
+                            <input type="text" name="jobTitleOther">
                         </div>
                     </div>
-
                     <div class="form-group">
-                        <label class="required">المنطقة التعليمية</label>
+                        <label class="required">📍 المنطقة</label>
                         <select name="region" id="region" required>
-                            <option value="">اختر المنطقة</option>
+                            <option value="">اختر</option>
                             <option value="الوسطى - شرق">الوسطى - شرق</option>
                             <option value="الوسطى - غرب">الوسطى - غرب</option>
                             <option value="الجنوبية - خانيونس">الجنوبية - خانيونس</option>
                             <option value="أخرى">أخرى</option>
                         </select>
-                        <div class="error-message">يرجى اختيار المنطقة التعليمية</div>
                         <div class="other-input" id="regionOther">
-                            <input type="text" placeholder="حدد المنطقة" name="regionOther">
+                            <input type="text" name="regionOther">
                         </div>
                     </div>
                 </div>
-
                 <div class="grid-2">
                     <div class="form-group">
-                        <label class="required">تاريخ إدخال البيانات</label>
-                        <input type="date" name="entryDate" required>
-                        <div class="error-message">يرجى إدخال التاريخ</div>
+                        <label class="required">📅 تاريخ الإدخال</label>
+                        <input type="date" name="entryDate" id="entryDate" required>
                     </div>
-
                     <div class="form-group">
-                        <label class="required">فترة الزيارة</label>
+                        <label class="required">⏰ فترة الزيارة</label>
                         <select name="visitPeriod" required>
-                            <option value="">اختر الفترة</option>
+                            <option value="">اختر</option>
                             <option value="صباحية">صباحية</option>
                             <option value="مسائية">مسائية</option>
                             <option value="كلا الفترتين">كلا الفترتين</option>
                         </select>
-                        <div class="error-message">يرجى اختيار فترة الزيارة</div>
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label class="required">اسم المركز التعليمي</label>
-                    <input type="text" name="centerName" required>
-                    <div class="error-message">يرجى إدخال اسم المركز</div>
+                    <label class="required">🏫 اسم المركز</label>
+                    <input type="text" name="centerName" id="centerName" required>
                 </div>
             </div>
 
-            <!-- القسم 2: الإحصائيات -->
+            <!-- القسم 2 -->
             <div class="form-section" data-section="2">
-                <h2 class="section-title">📊 الإحصائيات الكمية</h2>
-                <p class="section-description">البيانات الإحصائية للمركز التعليمي</p>
-
+                <h2 class="section-title">📊 الإحصائيات</h2>
                 <div class="grid-2">
                     <div class="form-group">
-                        <label class="required">عدد الموظفين</label>
-                        <input type="number" name="staffCount" min="0" required>
-                        <div class="error-message">يرجى إدخال عدد الموظفين</div>
+                        <label class="required">👥 عدد الموظفين</label>
+                        <input type="number" name="staffCount" id="staffCount" min="0" required>
                     </div>
-
                     <div class="form-group">
-                        <label class="required">عدد الطلبة المسجلين</label>
-                        <input type="number" name="studentCount" min="0" required>
-                        <div class="error-message">يرجى إدخال عدد الطلبة</div>
+                        <label class="required">🎓 عدد الطلبة</label>
+                        <input type="number" name="studentCount" id="studentCount" min="0" required>
                     </div>
                 </div>
-
                 <div class="grid-2">
                     <div class="form-group">
-                        <label class="required">نسبة حضور الطلبة</label>
-                        <div class="percentage-input">
-                            <input type="number" name="attendanceRate" min="0" max="100" required>
-                        </div>
-                        <div class="error-message">يرجى إدخال نسبة صحيحة (0-100)</div>
+                        <label class="required">📈 نسبة الحضور %</label>
+                        <input type="number" name="attendanceRate" id="attendanceRate" min="0" max="100" step="0.1" required>
+                        <p class="percent-hint">القيمة بين 0% و 100%</p>
                     </div>
-
                     <div class="form-group">
-                        <label>عدد الغرف الصفية المستخدمة</label>
-                        <input type="number" name="classroomsCount" min="0">
+                        <label>🏠 عدد الغرف الصفية</label>
+                        <input type="number" name="classroomsCount" id="classroomsCount" min="0">
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label>عدد الخيام/المساحات المؤقتة</label>
-                    <input type="number" name="tentsCount" min="0">
+                    <label>⛺ عدد الخيام المؤقتة</label>
+                    <input type="number" name="tentsCount" id="tentsCount" min="0">
                 </div>
             </div>
 
-            <!-- القسم 3: التحديات -->
+            <!-- القسم 3 -->
             <div class="form-section" data-section="3">
                 <h2 class="section-title">⚠️ التحديات والمخاطر</h2>
-                <p class="section-description">أضف التحديات والمخاطر المرصودة في المركز</p>
-
-                <div class="form-group">
-                    <label>التحديات المرصودة</label>
-                    <div id="challengesContainer" class="dynamic-items">
-                        <!-- سيتم إضافة التحديات هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addChallenge()">
-                        + إضافة تحدي
-                    </button>
+                
+                <div class="challenges-box">
+                    <div class="section-subtitle">⚠️ التحديات المرصودة</div>
+                    <div id="challengesContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addChallenge()">+ إضافة تحدي</button>
                 </div>
-
-                <div class="form-group">
-                    <label>المخاطر الأمنية</label>
-                    <div id="securityRisksContainer" class="dynamic-items">
-                        <!-- سيتم إضافة المخاطر هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addSecurityRisk()">
-                        + إضافة خطر أمني
-                    </button>
+                
+                <div class="security-box">
+                    <div class="section-subtitle">🔒 المخاطر الأمنية</div>
+                    <div id="securityRisksContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addSecurityRisk()">+ إضافة خطر أمني</button>
                 </div>
-
+                
                 <div class="form-group">
-                    <label>ملاحظات إضافية</label>
-                    <textarea name="challengesNotes" placeholder="أية ملاحظات إضافية..."></textarea>
+                    <label>📝 ملاحظات إضافية</label>
+                    <textarea name="challengesNotes" id="challengesNotes"></textarea>
                 </div>
             </div>
 
-            <!-- القسم 4: الأنشطة -->
+            <!-- القسم 4 -->
             <div class="form-section" data-section="4">
                 <h2 class="section-title">🎯 الأنشطة المنفذة</h2>
-                <p class="section-description">الأنشطة والمبادرات المنفذة في المركز</p>
-
-                <div class="form-group">
-                    <label class="required">هل تم توظيف استراتيجيات تعلم نشطة؟</label>
-                    <div class="radio-group">
-                        <label class="radio-item">
-                            <input type="radio" name="activeLearning" value="نعم" required>
-                            <span>نعم</span>
-                        </label>
-                        <label class="radio-item">
-                            <input type="radio" name="activeLearning" value="لا">
-                            <span>لا</span>
-                        </label>
-                    </div>
-                    <div class="error-message">يرجى الاختيار</div>
+                
+                <div class="activities-box">
+                    <div class="section-subtitle">🎨 استراتيجيات تعلم نشطة <span class="section-badge">يمكن إضافة أكثر من واحدة</span></div>
+                    <div id="strategiesContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addStrategy()">+ إضافة استراتيجية</button>
                 </div>
-
-                <div class="form-group" id="strategyGroup" style="display: none;">
-                    <label>وصف الاستراتيجية وأثرها</label>
-                    <textarea name="strategyDescription" placeholder="صف الاستراتيجية المستخدمة وأثرها..."></textarea>
+                
+                <div class="competitions-box">
+                    <div class="section-subtitle">🏆 المسابقات المنفذة</div>
+                    <div id="competitionsContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addCompetition()">+ إضافة مسابقة</button>
                 </div>
-
-                <div class="form-group">
-                    <label>المسابقات التعليمية المنفذة</label>
-                    <div id="competitionsContainer" class="dynamic-items">
-                        <!-- سيتم إضافة المسابقات هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addCompetition()">
-                        + إضافة مسابقة
-                    </button>
+                
+                <div class="community-box">
+                    <div class="section-subtitle">🤝 مشاركة مجتمعية <span class="section-badge">يمكن إضافة أكثر من مشاركة</span></div>
+                    <div id="communityContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addCommunityParticipation()">+ إضافة مشاركة مجتمعية</button>
                 </div>
-
-                <div class="form-group">
-                    <label class="required">مشاركة مجتمعية</label>
-                    <select name="communityParticipation" id="communityParticipation" required>
-                        <option value="">اختر نوع المشاركة</option>
-                        <option value="برلمان طلابي">برلمان طلابي</option>
-                        <option value="مجلس أولياء أمور">مجلس أولياء أمور</option>
-                        <option value="كليهما">كليهما</option>
-                        <option value="لا">لا</option>
-                    </select>
-                    <div class="error-message">يرجى الاختيار</div>
-                </div>
-
-                <div class="form-group" id="communityGroup" style="display: none;">
-                    <label>أبرز المخرجات</label>
-                    <textarea name="communityOutcomes" placeholder="صف أبرز مخرجات المشاركة المجتمعية..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>مبادرات تحسينية أخرى</label>
-                    <textarea name="otherInitiatives" placeholder="صف أي مبادرات أخرى..."></textarea>
+                
+                <div class="initiatives-box">
+                    <div class="section-subtitle">🌟 مبادرات تحسينية <span class="section-badge">كل مبادرة بشكل مستقل</span></div>
+                    <div id="initiativesContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addInitiative()">+ إضافة مبادرة</button>
                 </div>
             </div>
 
-            <!-- القسم 5: قصص النجاح والتوصيات -->
+            <!-- القسم 5 -->
             <div class="form-section" data-section="5">
                 <h2 class="section-title">🌟 قصص النجاح والتوصيات</h2>
-                <p class="section-description">قصص النجاح والتوصيات المقترحة</p>
-
-                <!-- قسم قصص النجاح - مميز باللون الأصفر/الذهبي -->
+                
                 <div class="section-box success-stories-box">
-                    <div class="section-subtitle">
-                        🌟 قصص النجاح
-                        <span class="section-badge badge-success">إيجابي</span>
-                    </div>
-                    <div id="successStoriesContainer" class="dynamic-items">
-                        <!-- سيتم إضافة قصص النجاح هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addSuccessStory()">
-                        + إضافة قصة نجاح
-                    </button>
+                    <div class="section-subtitle">🌟 قصص النجاح</div>
+                    <div id="successStoriesContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addSuccessStory()">+ إضافة قصة نجاح</button>
                 </div>
 
-                <!-- قسم التوصيات العاجلة - مميز باللون الأحمر -->
                 <div class="section-box urgent-rec-box">
-                    <div class="section-subtitle">
-                        🚨 التوصيات العاجلة (خلال أسبوعين)
-                        <span class="section-badge badge-urgent">عاجل جداً</span>
-                    </div>
-                    <div id="urgentRecommendationsContainer" class="dynamic-items">
-                        <!-- سيتم إضافة التوصيات العاجلة هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addUrgentRecommendation()">
-                        + إضافة توصية عاجلة
-                    </button>
+                    <div class="section-subtitle">🚨 توصيات عاجلة</div>
+                    <div id="urgentRecommendationsContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addUrgentRecommendation()">+ إضافة توصية عاجلة</button>
                 </div>
 
-                <!-- قسم التوصيات متوسطة المدى - مميز باللون الأزرق -->
                 <div class="section-box medium-rec-box">
-                    <div class="section-subtitle">
-                        📅 التوصيات متوسطة المدى
-                        <span class="section-badge badge-medium">متوسط المدى</span>
-                    </div>
-                    <div id="mediumRecommendationsContainer" class="dynamic-items">
-                        <!-- سيتم إضافة التوصيات متوسطة المدى هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addMediumRecommendation()">
-                        + إضافة توصية متوسطة المدى
-                    </button>
+                    <div class="section-subtitle">📅 توصيات متوسطة المدى</div>
+                    <div id="mediumRecommendationsContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addMediumRecommendation()">+ إضافة توصية</button>
                 </div>
 
-                <!-- قسم الحلول الاستراتيجية - مميز باللون الأخضر -->
                 <div class="section-box strategic-box">
-                    <div class="section-subtitle">
-                        🎯 الحلول الاستراتيجية
-                        <span class="section-badge badge-strategic">استراتيجي</span>
-                    </div>
-                    <div id="strategicSolutionsContainer" class="dynamic-items">
-                        <!-- سيتم إضافة الحلول الاستراتيجية هنا ديناميكياً -->
-                    </div>
-                    <button type="button" class="add-btn" onclick="addStrategicSolution()">
-                        + إضافة حل استراتيجي
-                    </button>
+                    <div class="section-subtitle">🎯 حلول استراتيجية</div>
+                    <div id="strategicSolutionsContainer" class="dynamic-items"></div>
+                    <button type="button" class="add-btn" onclick="addStrategicSolution()">+ إضافة حل</button>
                 </div>
 
                 <div class="form-group">
-                    <label class="required">تقييم عام لأداء المركز (1-5)</label>
-                    <select name="overallRating" required>
-                        <option value="">اختر التقييم</option>
+                    <label class="required">⭐ التقييم العام (1-5)</label>
+                    <select name="overallRating" id="overallRating" required>
+                        <option value="">اختر</option>
                         <option value="1">1 - ضعيف جداً</option>
                         <option value="2">2 - ضعيف</option>
                         <option value="3">3 - متوسط</option>
                         <option value="4">4 - جيد</option>
                         <option value="5">5 - ممتاز</option>
                     </select>
-                    <div class="error-message">يرجى اختيار التقييم</div>
                 </div>
 
                 <div class="form-group">
-                    <label class="required">هل توصي باستمرار الدعم؟</label>
-                    <select name="continueSupport" required>
+                    <label class="required">💪 استمرار الدعم؟</label>
+                    <select name="continueSupport" id="continueSupport" required>
                         <option value="">اختر</option>
                         <option value="نعم - بأولوية عالية">نعم - بأولوية عالية</option>
                         <option value="نعم - بأولوية متوسطة">نعم - بأولوية متوسطة</option>
                         <option value="لا - يحتاج إعادة تقييم">لا - يحتاج إعادة تقييم</option>
                     </select>
-                    <div class="error-message">يرجى الاختيار</div>
                 </div>
 
                 <div class="form-group">
-                    <label>ملاحظات ختامية</label>
-                    <textarea name="finalNotes" placeholder="أية ملاحظات إضافية..."></textarea>
+                    <label>📝 ملاحظات ختامية</label>
+                    <textarea name="finalNotes" id="finalNotes"></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" name="dataAccuracy" required style="width: auto; margin: 0;">
-                        <span class="required">أقر بأن البيانات دقيقة وصحيحة</span>
+                <div class="form-group accuracy-ack" id="accuracyAckGroup">
+                    <label class="accuracy-card" for="dataAccuracy">
+                        <input type="checkbox" name="dataAccuracy" id="dataAccuracy" required>
+                        <div class="accuracy-text">
+                            <strong>✅ أقر بصحة البيانات المدخلة</strong>
+                            <span>أتحمل المسؤولية عن دقة المعلومات الواردة في هذا التقرير، وأؤكد أنها تعكس الواقع الفعلي للزيارة والمركز.</span>
+                        </div>
                     </label>
-                    <div class="error-message">يرجى تأكيد دقة البيانات</div>
+                    <p class="error-message">يجب الإقرار بصحة البيانات قبل الإرسال</p>
                 </div>
             </div>
         </form>
@@ -979,318 +834,143 @@
         <div class="success-message" id="successMessage">
             <div class="success-icon">✅</div>
             <h2>تم الإرسال بنجاح!</h2>
-            <p>شكراً لك. تم حفظ البيانات بنجاح.</p>
-            
             <div class="export-buttons">
-                <button class="export-btn export-pdf" onclick="exportToPDF()">📄 تصدير PDF احترافي</button>
-                <button class="export-btn export-email" onclick="exportToEmail()">📧 إرسال كبريد إلكتروني</button>
-                <button class="export-btn export-json" onclick="exportToJSON()">💾 تصدير JSON</button>
+                <button class="export-btn export-pdf" onclick="exportToPDF()">📄 PDF</button>
+                <button class="export-btn export-email" onclick="exportToEmail()">📧 البريد</button>
+                <button class="export-btn export-json" onclick="exportToJSON()">💾 JSON</button>
+                <button class="export-btn export-print" onclick="printReport()">🖨️ طباعة</button>
             </div>
-            
-            <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 20px;">إدخال تقرير جديد</button>
+            <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 30px;">تقرير جديد</button>
         </div>
 
         <div class="btn-container" id="btnContainer">
-            <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" disabled>السابق</button>
-            <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">التالي</button>
+            <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)">◀ السابق</button>
+            <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">التالي ▶</button>
+        </div>
+
+        <section id="previousReports" class="reports-section">
+            <div class="reports-section-header">
+                <h2>📂 التقارير السابقة</h2>
+            </div>
+            <p id="reportsEmpty" class="reports-empty hidden">لا توجد تقارير محفوظة بعد. أرسل تقريراً جديداً ليظهر هنا.</p>
+            <div id="reportsList"></div>
+        </section>
+
         </div>
     </div>
 
-    <!-- محتوى PDF المخفي -->
-    <div id="pdfContent">
-        <div class="pdf-header">
-            <div class="pdf-title">📊 التقرير التحليلي لنتائج ضبط الجودة</div>
-            <div class="pdf-period" id="pdfPeriod"></div>
-        </div>
-        <div id="pdfBody"></div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="form-data.js"></script>
+    <script src="reports-api.js"></script>
+    <script src="auth-ui.js"></script>
+    <script src="load-reports.js"></script>
     <script>
         let currentStep = 1;
-        const totalSteps = 5;
-        let challengeCount = 0;
-        let securityRiskCount = 0;
-        let competitionCount = 0;
-        let successStoryCount = 0;
-        let urgentRecCount = 0;
-        let mediumRecCount = 0;
-        let strategicSolutionCount = 0;
+        let challengeCount = 0, securityCount = 0, competitionCount = 0;
+        let strategyCount = 0, communityCount = 0, initiativeCount = 0;
+        let storyCount = 0, urgentCount = 0, mediumCount = 0, strategicCount = 0;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        const STRATEGY_OPTIONS = [
+            'التعلم التعاوني', 'التعلم بالمشاريع', 'التعلم القائم على حل المشكلات',
+            'العصف الذهني', 'التمثيل والمحاكاة', 'التعلم الذاتي الموجّه', 'أخرى'
+        ];
+
+        const COMMUNITY_OPTIONS = [
+            'برلمان طلابي', 'مجلس أولياء أمور', 'ورش توعوية', 'أنشطة تطوعية', 'أخرى'
+        ];
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function bindPercentInput(input) {
+            const clamp = () => {
+                if (input.value === '') return;
+                const clamped = clampPercentValue(input.value);
+                if (clamped !== '' && String(clamped) !== input.value) {
+                    input.value = clamped;
+                }
+            };
+            input.addEventListener('input', clamp);
+            input.addEventListener('blur', clamp);
+        }
+
+        function toggleOtherField(selectEl, otherWrapperSelector) {
+            const wrapper = selectEl.closest('.dynamic-item')?.querySelector(otherWrapperSelector);
+            if (wrapper) {
+                wrapper.classList.toggle('show', selectEl.value === 'أخرى');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
             updateProgress();
-            setupEventListeners();
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelector('[name="entryDate"]').value = today;
+            setupListeners();
+            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+            ensureArabicFontLoaded().catch(() => {});
+            initAuth().catch(console.error);
         });
 
-        function setupEventListeners() {
+        function setupListeners() {
             document.getElementById('jobTitle').addEventListener('change', function() {
-                const otherDiv = document.getElementById('jobTitleOther');
-                if (this.value === 'أخرى') {
-                    otherDiv.classList.add('show');
-                    otherDiv.querySelector('input').required = true;
-                } else {
-                    otherDiv.classList.remove('show');
-                    otherDiv.querySelector('input').required = false;
-                }
+                document.getElementById('jobTitleOther').classList.toggle('show', this.value === 'أخرى');
             });
-
             document.getElementById('region').addEventListener('change', function() {
-                const otherDiv = document.getElementById('regionOther');
-                if (this.value === 'أخرى') {
-                    otherDiv.classList.add('show');
-                    otherDiv.querySelector('input').required = true;
-                } else {
-                    otherDiv.classList.remove('show');
-                    otherDiv.querySelector('input').required = false;
-                }
+                document.getElementById('regionOther').classList.toggle('show', this.value === 'أخرى');
             });
-
-            document.querySelectorAll('input[name="activeLearning"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const strategyGroup = document.getElementById('strategyGroup');
-                    strategyGroup.style.display = this.value === 'نعم' ? 'block' : 'none';
-                });
-            });
-
-            document.getElementById('communityParticipation').addEventListener('change', function() {
-                const communityGroup = document.getElementById('communityGroup');
-                communityGroup.style.display = this.value !== 'لا' ? 'block' : 'none';
+            bindPercentInput(document.getElementById('attendanceRate'));
+            document.getElementById('dataAccuracy').addEventListener('change', function() {
+                const group = document.getElementById('accuracyAckGroup');
+                const card = group.querySelector('.accuracy-card');
+                card.classList.toggle('checked', this.checked);
+                if (this.checked) group.classList.remove('error');
             });
         }
 
-        // إضافة تحدي
-        function addChallenge() {
-            challengeCount++;
-            const container = document.getElementById('challengesContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">تحدي #${challengeCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">وصف التحدي</label>
-                    <textarea name="challenge_${challengeCount}" required placeholder="صف التحدي..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>النسبة المئوية (إن وجدت)</label>
-                    <div class="percentage-input">
-                        <input type="number" name="challengePercent_${challengeCount}" min="0" max="100" placeholder="0-100">
-                    </div>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        // إضافة خطر أمني
-        function addSecurityRisk() {
-            securityRiskCount++;
-            const container = document.getElementById('securityRisksContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">خطر أمني #${securityRiskCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">نوع الخطر</label>
-                    <select name="securityType_${securityRiskCount}" required>
-                        <option value="">اختر النوع</option>
-                        <option value="اعتداء لفظي">اعتداء لفظي</option>
-                        <option value="اعتداء جسدي">اعتداء جسدي</option>
-                        <option value="تخريب ممتلكات">تخريب ممتلكات</option>
-                        <option value="أخرى">أخرى</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="required">وصف الحادث</label>
-                    <textarea name="securityDesc_${securityRiskCount}" required placeholder="صف تفاصيل الحادث..."></textarea>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        // إضافة مسابقة
-        function addCompetition() {
-            competitionCount++;
-            const container = document.getElementById('competitionsContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">مسابقة #${competitionCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">اسم المسابقة</label>
-                    <input type="text" name="compName_${competitionCount}" required placeholder="مثال: الحناجر الذهبية">
-                </div>
-                <div class="form-group">
-                    <label>تفاصيل إضافية</label>
-                    <input type="text" name="compDetails_${competitionCount}" placeholder="تفاصيل إضافية...">
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        // إضافة قصة نجاح
-        function addSuccessStory() {
-            successStoryCount++;
-            const container = document.getElementById('successStoriesContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">قصة نجاح #${successStoryCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">اسم المبادرة/المركز</label>
-                    <input type="text" name="storyName_${successStoryCount}" required>
-                </div>
-                <div class="form-group">
-                    <label class="required">التحدي</label>
-                    <textarea name="storyChallenge_${successStoryCount}" required placeholder="التحدي الذي تم تجاوزه..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="required">الحل الإبداعي</label>
-                    <textarea name="storySolution_${successStoryCount}" required placeholder="الحل المُطبق..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="required">الأثر</label>
-                    <textarea name="storyImpact_${successStoryCount}" required placeholder="الأثر على العملية التعليمية..."></textarea>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        // إضافة توصية عاجلة
-        function addUrgentRecommendation() {
-            urgentRecCount++;
-            const container = document.getElementById('urgentRecommendationsContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">توصية عاجلة #${urgentRecCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">التوصية</label>
-                    <textarea name="urgentRec_${urgentRecCount}" required placeholder="صف التوصية العاجلة..."></textarea>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        // إضافة توصية متوسطة المدى
-        function addMediumRecommendation() {
-            mediumRecCount++;
-            const container = document.getElementById('mediumRecommendationsContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">توصية متوسطة المدى #${mediumRecCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">التوصية</label>
-                    <textarea name="mediumRec_${mediumRecCount}" required placeholder="صف التوصية متوسطة المدى..."></textarea>
-                </div>
-            `;
-            container.appendChild(item);
-        }
-
-        // إضافة حل استراتيجي
-        function addStrategicSolution() {
-            strategicSolutionCount++;
-            const container = document.getElementById('strategicSolutionsContainer');
-            const item = document.createElement('div');
-            item.className = 'dynamic-item';
-            item.innerHTML = `
-                <div class="dynamic-item-header">
-                    <span class="dynamic-item-title">حل استراتيجي #${strategicSolutionCount}</span>
-                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
-                </div>
-                <div class="form-group">
-                    <label class="required">الحل الاستراتيجي</label>
-                    <textarea name="strategicSolution_${strategicSolutionCount}" required placeholder="صف الحل الاستراتيجي..."></textarea>
-                </div>
-            `;
-            container.appendChild(item);
+        function goToStep(step) {
+            if (step > currentStep && !validateCurrentStep()) return;
+            document.querySelector(`.form-section[data-section="${currentStep}"]`).classList.remove('active');
+            currentStep = step;
+            document.querySelector(`.form-section[data-section="${currentStep}"]`).classList.add('active');
+            updateButtons();
+            updateProgress();
         }
 
         function changeStep(direction) {
-            if (direction === 1 && !validateCurrentStep()) {
-                return;
-            }
-
+            if (direction === 1 && !validateCurrentStep()) return;
             document.querySelector(`.form-section[data-section="${currentStep}"]`).classList.remove('active');
             currentStep += direction;
             document.querySelector(`.form-section[data-section="${currentStep}"]`).classList.add('active');
-
-            document.getElementById('prevBtn').disabled = currentStep === 1;
-            
-            const nextBtn = document.getElementById('nextBtn');
-            if (currentStep === totalSteps) {
-                nextBtn.textContent = 'إرسال';
-                nextBtn.onclick = submitForm;
-            } else {
-                nextBtn.textContent = 'التالي';
-                nextBtn.onclick = () => changeStep(1);
-            }
-
+            updateButtons();
             updateProgress();
-            document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function validateCurrentStep() {
-            const currentSection = document.querySelector(`.form-section[data-section="${currentStep}"]`);
-            const requiredFields = currentSection.querySelectorAll('[required]');
-            let isValid = true;
-
-            requiredFields.forEach(field => {
-                const formGroup = field.closest('.form-group');
-                
-                if (field.type === 'radio') {
-                    const radioName = field.name;
-                    const checkedRadio = currentSection.querySelector(`input[name="${radioName}"]:checked`);
-                    if (!checkedRadio) {
-                        isValid = false;
-                        formGroup.classList.add('error');
-                    } else {
-                        formGroup.classList.remove('error');
-                    }
-                } else if (!field.value.trim()) {
-                    isValid = false;
-                    formGroup.classList.add('error');
-                } else {
-                    formGroup.classList.remove('error');
-                }
-            });
-
-            if (!isValid) {
-                alert('يرجى ملء جميع الحقول الإلزامية (*)');
+        function updateButtons() {
+            document.getElementById('prevBtn').disabled = currentStep === 1;
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentStep === 5) {
+                nextBtn.textContent = '✓ إرسال';
+                nextBtn.onclick = submitForm;
+            } else {
+                nextBtn.textContent = 'التالي ▶';
+                nextBtn.onclick = () => changeStep(1);
             }
-
-            return isValid;
         }
 
         function updateProgress() {
-            const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            const progress = ((currentStep - 1) / 4) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
-
-            document.querySelectorAll('.step').forEach((step, index) => {
-                const stepNum = index + 1;
+            document.querySelectorAll('.step').forEach((step, idx) => {
+                const stepNum = idx + 1;
                 step.classList.remove('active', 'completed');
-                
                 if (stepNum === currentStep) {
                     step.classList.add('active');
+                    step.innerHTML = stepNum;
                 } else if (stepNum < currentStep) {
                     step.classList.add('completed');
                     step.innerHTML = '✓';
@@ -1298,168 +978,690 @@
                     step.innerHTML = stepNum;
                 }
             });
-
             document.getElementById('currentStepNum').textContent = currentStep;
         }
 
-        function submitForm() {
-            if (!validateCurrentStep()) {
+        function validateCurrentStep() {
+            const section = document.querySelector(`.form-section[data-section="${currentStep}"]`);
+            const required = section.querySelectorAll('[required]');
+            let valid = true;
+            
+            required.forEach(field => {
+                const group = field.closest('.form-group');
+                if (!group) return;
+                
+                if (field.type === 'radio') {
+                    const checked = section.querySelector(`input[name="${field.name}"]:checked`);
+                    if (!checked) {
+                        valid = false;
+                        group.classList.add('error');
+                    } else {
+                        group.classList.remove('error');
+                    }
+                } else if (field.type === 'checkbox') {
+                    if (!field.checked) {
+                        valid = false;
+                        group.classList.add('error');
+                    } else {
+                        group.classList.remove('error');
+                    }
+                } else if (!field.value.trim()) {
+                    valid = false;
+                    group.classList.add('error');
+                } else {
+                    group.classList.remove('error');
+                }
+            });
+
+            if (currentStep === 2) {
+                const attendance = document.getElementById('attendanceRate');
+                const attGroup = attendance.closest('.form-group');
+                const attVal = clampPercentValue(attendance.value);
+                if (attendance.value !== '' && attVal !== parseFloat(attendance.value)) {
+                    attendance.value = attVal;
+                }
+                if (attendance.value !== '' && (attVal < 0 || attVal > 100)) {
+                    valid = false;
+                    attGroup.classList.add('error');
+                }
+            }
+
+            if (currentStep === 3) {
+                document.querySelectorAll('[name^="challenge_percent_"]').forEach(inp => {
+                    if (inp.value !== '') {
+                        inp.value = clampPercentValue(inp.value);
+                        if (inp.value === '' || parseFloat(inp.value) < 0 || parseFloat(inp.value) > 100) {
+                            valid = false;
+                            inp.closest('.dynamic-item')?.classList.add('error');
+                        }
+                    }
+                });
+                document.querySelectorAll('#securityRisksContainer .dynamic-item').forEach(item => {
+                    const sel = item.querySelector('select[name^="security_type_"]');
+                    const other = item.querySelector('input[name^="security_type_other_"]');
+                    if (sel?.value === 'أخرى' && !other?.value?.trim()) {
+                        valid = false;
+                        other?.closest('.form-group') || item.classList.add('error');
+                        if (other) other.style.borderColor = '#ef4444';
+                    }
+                });
+            }
+
+            if (currentStep === 4) {
+                document.querySelectorAll('#strategiesContainer .dynamic-item').forEach(item => {
+                    const sel = item.querySelector('select[name^="strategy_type_"]');
+                    const other = item.querySelector('input[name^="strategy_type_other_"]');
+                    if (sel?.value === 'أخرى' && !other?.value?.trim()) {
+                        valid = false;
+                        if (other) other.style.borderColor = '#ef4444';
+                    }
+                });
+                document.querySelectorAll('#communityContainer .dynamic-item').forEach(item => {
+                    const sel = item.querySelector('select[name^="community_type_"]');
+                    const other = item.querySelector('input[name^="community_type_other_"]');
+                    if (sel?.value === 'أخرى' && !other?.value?.trim()) {
+                        valid = false;
+                        if (other) other.style.borderColor = '#ef4444';
+                    }
+                });
+            }
+            
+            if (!valid) {
+                Swal.fire('تنبيه', 'يرجى ملء جميع الحقول الإلزامية', 'warning');
+            }
+            return valid;
+        }
+
+        // Add functions
+        function addChallenge() {
+            challengeCount++;
+            const container = document.getElementById('challengesContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">⚠️ تحدي #${challengeCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <textarea name="challenge_${challengeCount}" required placeholder="وصف التحدي..."></textarea>
+                <input type="number" name="challenge_percent_${challengeCount}" placeholder="النسبة المئوية %" min="0" max="100" step="0.1" style="margin-top:10px">
+                <p class="percent-hint">بين 0% و 100%</p>
+            `;
+            container.appendChild(div);
+            bindPercentInput(div.querySelector('[name^="challenge_percent_"]'));
+            div.querySelector('textarea').focus();
+        }
+
+        function addSecurityRisk() {
+            securityCount++;
+            const container = document.getElementById('securityRisksContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🔒 خطر أمني #${securityCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <select name="security_type_${securityCount}" required onchange="toggleOtherField(this, '.security-other-wrap')">
+                    <option value="">نوع الخطر</option>
+                    <option value="اعتداء لفظي">اعتداء لفظي</option>
+                    <option value="اعتداء جسدي">اعتداء جسدي</option>
+                    <option value="تخريب">تخريب</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+                <div class="other-input security-other-wrap" style="margin-top:10px">
+                    <input type="text" name="security_type_other_${securityCount}" placeholder="حدد نوع الخطر...">
+                </div>
+                <textarea name="security_desc_${securityCount}" required placeholder="وصف الحادث..." style="margin-top:10px"></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('select').focus();
+        }
+
+        function addStrategy() {
+            strategyCount++;
+            const container = document.getElementById('strategiesContainer');
+            const options = STRATEGY_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🎨 استراتيجية #${strategyCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <select name="strategy_type_${strategyCount}" onchange="toggleOtherField(this, '.strategy-other-wrap')">
+                    <option value="">اختر الاستراتيجية</option>
+                    ${options}
+                </select>
+                <div class="other-input strategy-other-wrap" style="margin-top:10px">
+                    <input type="text" name="strategy_type_other_${strategyCount}" placeholder="حدد الاستراتيجية...">
+                </div>
+                <textarea name="strategy_desc_${strategyCount}" placeholder="الوصف والأثر..." style="margin-top:10px"></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('select').focus();
+        }
+
+        function addCommunityParticipation() {
+            communityCount++;
+            const container = document.getElementById('communityContainer');
+            const options = COMMUNITY_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🤝 مشاركة #${communityCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <select name="community_type_${communityCount}" required onchange="toggleOtherField(this, '.community-other-wrap')">
+                    <option value="">نوع المشاركة</option>
+                    ${options}
+                </select>
+                <div class="other-input community-other-wrap" style="margin-top:10px">
+                    <input type="text" name="community_type_other_${communityCount}" placeholder="حدد نوع المشاركة...">
+                </div>
+                <textarea name="community_outcomes_${communityCount}" placeholder="أبرز المخرجات..." style="margin-top:10px"></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('select').focus();
+        }
+
+        function addInitiative() {
+            initiativeCount++;
+            const container = document.getElementById('initiativesContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🌟 مبادرة #${initiativeCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <input type="text" name="initiative_name_${initiativeCount}" required placeholder="اسم المبادرة">
+                <textarea name="initiative_desc_${initiativeCount}" required placeholder="وصف المبادرة وأثرها..." style="margin-top:10px"></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('input').focus();
+        }
+
+        function addCompetition() {
+            competitionCount++;
+            const container = document.getElementById('competitionsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🏆 مسابقة #${competitionCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <input type="text" name="comp_name_${competitionCount}" required placeholder="اسم المسابقة">
+                <input type="text" name="comp_details_${competitionCount}" placeholder="تفاصيل إضافية" style="margin-top:10px">
+            `;
+            container.appendChild(div);
+            div.querySelector('input').focus();
+        }
+
+        function addSuccessStory() {
+            storyCount++;
+            const container = document.getElementById('successStoriesContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🌟 قصة نجاح #${storyCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <input type="text" name="story_name_${storyCount}" required placeholder="اسم المبادرة">
+                <textarea name="story_challenge_${storyCount}" required placeholder="التحدي" style="margin-top:10px"></textarea>
+                <textarea name="story_solution_${storyCount}" required placeholder="الحل الإبداعي" style="margin-top:10px"></textarea>
+                <textarea name="story_impact_${storyCount}" required placeholder="الأثر" style="margin-top:10px"></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('input').focus();
+        }
+
+        function addUrgentRecommendation() {
+            urgentCount++;
+            const container = document.getElementById('urgentRecommendationsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🚨 توصية عاجلة #${urgentCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <textarea name="urgent_${urgentCount}" required placeholder="نص التوصية العاجلة..."></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('textarea').focus();
+        }
+
+        function addMediumRecommendation() {
+            mediumCount++;
+            const container = document.getElementById('mediumRecommendationsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">📅 توصية متوسطة #${mediumCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <textarea name="medium_${mediumCount}" required placeholder="نص التوصية..."></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('textarea').focus();
+        }
+
+        function addStrategicSolution() {
+            strategicCount++;
+            const container = document.getElementById('strategicSolutionsContainer');
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.innerHTML = `
+                <div class="dynamic-item-header">
+                    <span class="dynamic-item-title">🎯 حل استراتيجي #${strategicCount}</span>
+                    <button type="button" class="remove-btn" onclick="this.closest('.dynamic-item').remove()">حذف</button>
+                </div>
+                <textarea name="strategic_${strategicCount}" required placeholder="نص الحل الاستراتيجي..."></textarea>
+            `;
+            container.appendChild(div);
+            div.querySelector('textarea').focus();
+        }
+
+        async function submitForm() {
+            if (!validateCurrentStep()) return;
+            if (!window.currentUser) {
+                Swal.fire('تنبيه', 'يرجى تسجيل الدخول أولاً', 'warning');
                 return;
             }
 
-            const formData = new FormData(document.getElementById('qualityForm'));
-            const data = Object.fromEntries(formData.entries());
+            Swal.fire({
+                title: 'جاري الحفظ...',
+                text: 'يتم حفظ التقرير في قاعدة البيانات',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
 
-            console.log('بيانات النموذج:', data);
-
-            document.getElementById('qualityForm').style.display = 'none';
-            document.getElementById('btnContainer').style.display = 'none';
-            document.querySelector('.progress-container').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'block';
+            try {
+                const data = collectFormData();
+                await saveCompleteReport(data);
+                Swal.close();
+                Swal.fire('تم الإرسال', 'تم حفظ التقرير في قاعدة البيانات بنجاح', 'success');
+                document.getElementById('qualityForm').style.display = 'none';
+                document.getElementById('btnContainer').style.display = 'none';
+                document.querySelector('.progress-container').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                if (typeof loadPreviousReports === 'function') {
+                    loadPreviousReports().catch(console.error);
+                }
+            } catch (err) {
+                console.error('Save report error:', err);
+                Swal.fire('خطأ', err.message || 'تعذر حفظ التقرير', 'error');
+            }
         }
 
-        // إنشاء محتوى PDF
-        function preparePDFContent() {
-            const formData = new FormData(document.getElementById('qualityForm'));
-            const data = Object.fromEntries(formData.entries());
-            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
-            
-            document.getElementById('pdfPeriod').textContent = `الفترة: ${period}`;
-            
-            let html = `
-                <div class="pdf-section">
-                    <div class="pdf-section-title">📋 البيانات الأساسية</div>
-                    <div class="pdf-item"><span class="pdf-label">اسم المختص:</span> <span class="pdf-value">${data.specialistName || ''}</span></div>
-                    <div class="pdf-item"><span class="pdf-label">المسمى الوظيفي:</span> <span class="pdf-value">${data.jobTitle || ''}</span></div>
-                    <div class="pdf-item"><span class="pdf-label">المنطقة التعليمية:</span> <span class="pdf-value">${data.region || ''}</span></div>
-                    <div class="pdf-item"><span class="pdf-label">اسم المركز:</span> <span class="pdf-value">${data.centerName || ''}</span></div>
-                </div>
-                
-                <div class="pdf-section">
-                    <div class="pdf-section-title">📊 الإحصائيات</div>
-                    <div class="pdf-item"><span class="pdf-label">عدد الموظفين:</span> <span class="pdf-value">${data.staffCount || ''}</span></div>
-                    <div class="pdf-item"><span class="pdf-label">عدد الطلبة:</span> <span class="pdf-value">${data.studentCount || ''}</span></div>
-                    <div class="pdf-item"><span class="pdf-label">نسبة الحضور:</span> <span class="pdf-value">${data.attendanceRate || ''}%</span></div>
-                </div>
-            `;
-
-            // إضافة التحديات
-            html += `<div class="pdf-section"><div class="pdf-section-title">⚠️ التحديات</div>`;
-            for (let i = 1; i <= challengeCount; i++) {
-                if (data[`challenge_${i}`]) {
-                    html += `<div class="pdf-item"><strong>تحدي ${i}:</strong> ${data[`challenge_${i}`]}</div>`;
-                }
-            }
-            html += `</div>`;
-
-            // إضافة قصص النجاح
-            html += `<div class="pdf-section"><div class="pdf-section-title">🌟 قصص النجاح</div>`;
-            for (let i = 1; i <= successStoryCount; i++) {
-                if (data[`storyName_${i}`]) {
-                    html += `<div class="pdf-item"><strong>${data[`storyName_${i}`]}</strong><br>`;
-                    html += `التحدي: ${data[`storyChallenge_${i}`] || ''}<br>`;
-                    html += `الحل: ${data[`storySolution_${i}`] || ''}<br>`;
-                    html += `الأثر: ${data[`storyImpact_${i}`] || ''}</div>`;
-                }
-            }
-            html += `</div>`;
-
-            // إضافة التوصيات
-            html += `<div class="pdf-section"><div class="pdf-section-title">🚨 التوصيات العاجلة</div>`;
-            for (let i = 1; i <= urgentRecCount; i++) {
-                if (data[`urgentRec_${i}`]) {
-                    html += `<div class="pdf-item">${data[`urgentRec_${i}`]}</div>`;
-                }
-            }
-            html += `</div>`;
-
-            document.getElementById('pdfBody').innerHTML = html;
+        function getRatingText(rating) {
+            const ratings = {'1':'⭐ ضعيف جداً','2':'⭐⭐ ضعيف','3':'⭐⭐⭐ متوسط','4':'⭐⭐⭐⭐ جيد','5':'⭐⭐⭐⭐⭐ ممتاز'};
+            return ratings[rating] || rating;
         }
 
-        // تصدير إلى PDF احترافي
-        function exportToPDF() {
-            preparePDFContent();
-            const element = document.getElementById('pdfContent');
-            element.classList.add('show');
-            
-            const opt = {
-                margin: 1,
-                filename: 'quality-report.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
-            };
+        const PDF_FONT_FAMILY = 'CairoPDF';
+        const PDF_FONT = `'${PDF_FONT_FAMILY}', 'Cairo', 'Noto Sans Arabic', Tahoma, Arial, sans-serif`;
+        const PDF_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap';
+        const PDF_FONT_SOURCES = [
+            { weight: 400, url: 'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hOA-W1Q.ttf' },
+            { weight: 600, url: 'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hD45W1Q.ttf' },
+            { weight: 700, url: 'https://fonts.gstatic.com/s/cairo/v31/SLXgc1nY6HkvangtZmpQdkhzfH5lkSs2SgRjCAGMQ1z0hAc5W1Q.ttf' }
+        ];
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('show');
+        let pdfEmbeddedFontCss = null;
+
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            const chunkSize = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+            }
+            return btoa(binary);
+        }
+
+        async function loadEmbeddedPdfFonts() {
+            if (pdfEmbeddedFontCss) return pdfEmbeddedFontCss;
+
+            const faces = await Promise.all(PDF_FONT_SOURCES.map(async ({ weight, url }) => {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`تعذر تحميل خط PDF (${weight})`);
+                const base64 = arrayBufferToBase64(await response.arrayBuffer());
+                return `@font-face{font-family:'${PDF_FONT_FAMILY}';font-style:normal;font-weight:${weight};font-display:block;src:url(data:font/truetype;charset=utf-8;base64,${base64}) format('truetype');}`;
+            }));
+
+            pdfEmbeddedFontCss = faces.join('');
+            registerPdfFontsInDocument();
+            return pdfEmbeddedFontCss;
+        }
+
+        function registerPdfFontsInDocument() {
+            if (!pdfEmbeddedFontCss || document.getElementById('pdf-global-font-style')) return;
+            const style = document.createElement('style');
+            style.id = 'pdf-global-font-style';
+            style.textContent = pdfEmbeddedFontCss;
+            document.head.appendChild(style);
+        }
+
+        function buildPdfFontStyleTag() {
+            return `<style id="pdf-font-style">${pdfEmbeddedFontCss || ''}.pdf-report,.pdf-report *{font-family:${PDF_FONT}!important;direction:rtl;text-align:right;unicode-bidi:embed;-webkit-font-smoothing:antialiased;}</style>`;
+        }
+
+        async function ensureArabicFontLoaded() {
+            try {
+                await loadEmbeddedPdfFonts();
+
+                const fontLink = document.getElementById('cairo-font');
+                if (fontLink && !fontLink.sheet) {
+                    await new Promise((resolve) => {
+                        fontLink.addEventListener('load', resolve, { once: true });
+                        fontLink.addEventListener('error', resolve, { once: true });
+                        setTimeout(resolve, 5000);
+                    });
+                }
+
+                if (document.fonts && pdfEmbeddedFontCss) {
+                    await Promise.all([
+                        document.fonts.load(`400 16px ${PDF_FONT_FAMILY}`),
+                        document.fonts.load(`600 16px ${PDF_FONT_FAMILY}`),
+                        document.fonts.load(`700 22px ${PDF_FONT_FAMILY}`)
+                    ]);
+                    await document.fonts.ready;
+                }
+            } catch (e) {
+                console.warn('PDF font preload warning:', e);
+            }
+            await new Promise(r => setTimeout(r, 400));
+        }
+
+        function getJsPDF() {
+            if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+            if (typeof window.jsPDF !== 'undefined') return window.jsPDF;
+            return null;
+        }
+
+        function applyPdfArabicFont(root) {
+            if (!root) return;
+            root.style.fontFamily = PDF_FONT;
+            root.style.direction = 'rtl';
+            root.style.textAlign = 'right';
+            root.style.unicodeBidi = 'embed';
+            root.querySelectorAll('*').forEach(el => {
+                el.style.fontFamily = PDF_FONT;
+                el.style.direction = 'rtl';
+                el.style.unicodeBidi = 'embed';
             });
         }
 
-        // تصدير إلى بريد إلكتروني
-        function exportToEmail() {
-            const formData = new FormData(document.getElementById('qualityForm'));
-            const data = Object.fromEntries(formData.entries());
-            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
-            
-            let emailBody = `التقرير التحليلي لنتائج ضبط الجودة\n`;
-            emailBody += `الفترة: ${period}\n\n`;
-            
-            emailBody += `البيانات الأساسية:\n`;
-            emailBody += `- اسم المختص: ${data.specialistName}\n`;
-            emailBody += `- المسمى الوظيفي: ${data.jobTitle}\n`;
-            emailBody += `- المنطقة التعليمية: ${data.region}\n`;
-            emailBody += `- اسم المركز: ${data.centerName}\n\n`;
-            
-            emailBody += `الإحصائيات:\n`;
-            emailBody += `- عدد الموظفين: ${data.staffCount}\n`;
-            emailBody += `- عدد الطلبة: ${data.studentCount}\n`;
-            emailBody += `- نسبة الحضور: ${data.attendanceRate}%\n\n`;
-            
-            emailBody += `التحديات:\n`;
-            for (let i = 1; i <= challengeCount; i++) {
-                if (data[`challenge_${i}`]) {
-                    emailBody += `- ${data[`challenge_${i}`]}\n`;
-                }
+        function applyPdfFontToClone(clonedDoc) {
+            if (!clonedDoc || !pdfEmbeddedFontCss) return;
+            let styleEl = clonedDoc.getElementById('pdf-font-style');
+            if (!styleEl) {
+                styleEl = clonedDoc.createElement('style');
+                styleEl.id = 'pdf-font-style';
+                (clonedDoc.head || clonedDoc.documentElement).appendChild(styleEl);
             }
-            emailBody += `\n`;
-            
-            emailBody += `التوصيات العاجلة:\n`;
-            for (let i = 1; i <= urgentRecCount; i++) {
-                if (data[`urgentRec_${i}`]) {
-                    emailBody += `- ${data[`urgentRec_${i}`]}\n`;
-                }
-            }
-            
-            emailBody += `\nالتقييم العام: ${data.overallRating}/5\n`;
-            emailBody += `استمرار الدعم: ${data.continueSupport}\n`;
-            
-            const subject = encodeURIComponent('تقرير ضبط الجودة - ' + data.centerName);
-            const body = encodeURIComponent(emailBody);
-            
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+            styleEl.textContent = `${pdfEmbeddedFontCss}.pdf-report,.pdf-report *{font-family:${PDF_FONT}!important;direction:rtl;text-align:right;unicode-bidi:embed;-webkit-font-smoothing:antialiased;}`;
+            applyPdfArabicFont(clonedDoc.querySelector('.pdf-report'));
         }
 
-        // تصدير إلى JSON
+        function createPdfContainer(reportHtml) {
+            const container = document.createElement('div');
+            container.id = 'pdf-export-container';
+            container.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;background:#fff;opacity:1;pointer-events:none;z-index:-1;overflow:visible;';
+            container.innerHTML = buildPdfFontStyleTag() + reportHtml;
+            document.body.appendChild(container);
+            const element = container.querySelector('.pdf-report');
+            applyPdfArabicFont(element);
+            return { container, element };
+        }
+
+        async function captureReportCanvas(element) {
+            if (typeof html2canvas !== 'function') {
+                throw new Error('html2canvas غير متاح');
+            }
+            return await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: element.scrollWidth,
+                height: element.scrollHeight,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight,
+                scrollX: 0,
+                scrollY: 0,
+                onclone: applyPdfFontToClone
+            });
+        }
+
+        function canvasToPdf(canvas, fileName) {
+            const JsPDF = getJsPDF();
+            if (!JsPDF) throw new Error('jsPDF غير متاح');
+
+            const pdf = new JsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+            const margin = 10;
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const printableWidth = pageWidth - margin * 2;
+            const printableHeight = pageHeight - margin * 2;
+            const imgWidth = printableWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const imgData = canvas.toDataURL('image/png');
+
+            let offsetY = 0;
+            let pageIndex = 0;
+
+            while (offsetY < imgHeight) {
+                if (pageIndex > 0) pdf.addPage();
+                pdf.addImage(imgData, 'PNG', margin, margin - offsetY, imgWidth, imgHeight);
+                offsetY += printableHeight;
+                pageIndex++;
+            }
+
+            pdf.save(fileName);
+        }
+
+        async function exportViaHtml2pdf(element, fileName) {
+            await html2pdf().set({
+                margin: [10, 10, 10, 10],
+                filename: fileName,
+                image: { type: 'png', quality: 1 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    onclone: applyPdfFontToClone
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            }).from(element).save();
+        }
+
+        function buildReportContent(data, period, date) {
+            const e = escapeHtml;
+            const card = (html, color = '#667eea', bg = '#f8fafc') =>
+                `<div style="background:${bg};padding:14px;border-radius:8px;border-right:4px solid ${color};margin-bottom:10px;word-wrap:break-word;overflow-wrap:break-word;">${html}</div>`;
+            const section = (title, color, body) =>
+                `<div style="margin-bottom:24px;"><h2 style="color:#1e3c72;border-right:4px solid ${color};padding-right:12px;font-size:18px;margin:0 0 14px;">${title}</h2>${body}</div>`;
+
+            return `
+                <div class="pdf-report" dir="rtl" lang="ar" style="font-family:${PDF_FONT};direction:rtl;text-align:right;unicode-bidi:embed;line-height:1.8;color:#1e293b;background:#fff;padding:20px;width:190mm;box-sizing:border-box;word-wrap:break-word;overflow-wrap:break-word;">
+                    <div style="text-align:center;border-bottom:3px solid #1e3c72;padding-bottom:18px;margin-bottom:28px;">
+                        <h1 style="color:#1e3c72;font-size:22px;margin:0 0 8px;">📊 التقرير التحليلي لنتائج ضبط الجودة</h1>
+                        <p style="margin:4px 0;"><strong>الفترة:</strong> ${e(period)}</p>
+                        <p style="margin:4px 0;"><strong>تاريخ التقرير:</strong> ${e(date)}</p>
+                    </div>
+                    
+                    ${section('📋 البيانات الأساسية', '#667eea', card(`
+                        <p style="margin:0 0 8px;"><strong>اسم المختص:</strong> ${e(data.specialistName) || '-'}</p>
+                        <p style="margin:0 0 8px;"><strong>المسمى الوظيفي:</strong> ${e(data.jobTitle) || '-'}${data.jobTitleOther ? ` (${e(data.jobTitleOther)})` : ''}</p>
+                        <p style="margin:0 0 8px;"><strong>المنطقة:</strong> ${e(data.region) || '-'}${data.regionOther ? ` (${e(data.regionOther)})` : ''}</p>
+                        <p style="margin:0 0 8px;"><strong>المركز:</strong> ${e(data.centerName) || '-'}</p>
+                        <p style="margin:0 0 8px;"><strong>فترة الزيارة:</strong> ${e(data.visitPeriod) || '-'}</p>
+                        <p style="margin:0;"><strong>تاريخ الإدخال:</strong> ${e(data.entryDate) || '-'}</p>
+                    `))}
+
+                    ${section('📊 الإحصائيات', '#667eea', `
+                        <table style="width:100%;border-collapse:separate;border-spacing:8px;table-layout:fixed;">
+                            <tr>
+                                <td style="background:#667eea;color:#fff;padding:16px 8px;text-align:center;border-radius:8px;word-wrap:break-word;"><div style="font-size:24px;font-weight:bold;">${e(data.staffCount)}</div><div>الموظفين</div></td>
+                                <td style="background:#764ba2;color:#fff;padding:16px 8px;text-align:center;border-radius:8px;word-wrap:break-word;"><div style="font-size:24px;font-weight:bold;">${e(data.studentCount)}</div><div>الطلبة</div></td>
+                            </tr>
+                            <tr>
+                                <td style="background:#667eea;color:#fff;padding:16px 8px;text-align:center;border-radius:8px;word-wrap:break-word;"><div style="font-size:24px;font-weight:bold;">${data.attendanceRate !== '' ? e(data.attendanceRate) : '-'}%</div><div>الحضور</div></td>
+                                <td style="background:#764ba2;color:#fff;padding:16px 8px;text-align:center;border-radius:8px;word-wrap:break-word;"><div style="font-size:24px;font-weight:bold;">${e(data.classroomsCount)}</div><div>الغرف الصفية</div></td>
+                            </tr>
+                        </table>
+                        ${data.tentsCount && data.tentsCount !== '0' ? `<p style="margin-top:10px;"><strong>⛺ الخيام المؤقتة:</strong> ${e(data.tentsCount)}</p>` : ''}
+                    `)}
+
+                    ${data.challenges.length ? section('⚠️ التحديات المرصودة', '#f59e0b', data.challenges.map((ch, i) => card(`<strong>التحدي ${i + 1}:</strong> ${e(ch.text)}${ch.percent ? `<br><strong>النسبة:</strong> ${e(ch.percent)}%` : ''}`, '#f59e0b', '#fffbeb')).join('')) : ''}
+
+                    ${data.securityRisks.length ? section('🔒 المخاطر الأمنية', '#ef4444', data.securityRisks.map((r, i) => card(`<strong>الخطر ${i + 1} (${e(r.type)}):</strong><br>${e(r.desc)}`, '#ef4444', '#fef2f2')).join('')) : ''}
+
+                    ${data.challengesNotes ? section('📝 ملاحظات التحديات', '#f59e0b', card(e(data.challengesNotes), '#f59e0b', '#fffbeb')) : ''}
+
+                    ${data.strategies.length ? section('🎨 استراتيجيات تعلم نشطة', '#8b5cf6', data.strategies.map((s, i) => card(`<strong>${i + 1}. ${e(s.type)}</strong><br>${e(s.description)}`, '#8b5cf6', '#f5f3ff')).join('')) : ''}
+
+                    ${data.competitions.length ? section('🏆 المسابقات المنفذة', '#10b981', data.competitions.map(c => card(`<strong>${e(c.name)}</strong>${c.details ? `<br>${e(c.details)}` : ''}`, '#10b981', '#ecfdf5')).join('')) : ''}
+
+                    ${data.communityParticipations.length ? section('🤝 المشاركة المجتمعية', '#0ea5e9', data.communityParticipations.map((c, i) => card(`<strong>${i + 1}. ${e(c.type)}</strong>${c.outcomes ? `<br><strong>المخرجات:</strong> ${e(c.outcomes)}` : ''}`, '#0ea5e9', '#e0f2fe')).join('')) : ''}
+
+                    ${data.initiatives.length ? section('🌟 المبادرات التحسينية', '#f97316', data.initiatives.map((init, i) => card(`<strong>مبادرة ${i + 1}: ${e(init.name)}</strong><br>${e(init.description)}`, '#f97316', '#fff7ed')).join('')) : ''}
+
+                    ${data.successStories.length ? section('🌟 قصص النجاح', '#f59e0b', data.successStories.map(s => card(`
+                        <h3 style="margin:0 0 8px;font-size:15px;">📖 ${e(s.name)}</h3>
+                        <p style="margin:0 0 6px;"><strong>التحدي:</strong> ${e(s.challenge)}</p>
+                        <p style="margin:0 0 6px;"><strong>الحل:</strong> ${e(s.solution)}</p>
+                        <p style="margin:0;"><strong>الأثر:</strong> ${e(s.impact)}</p>
+                    `, '#f59e0b', '#fef3c7')).join('')) : ''}
+
+                    ${data.urgentRecommendations.length ? section('🚨 التوصيات العاجلة', '#ef4444', data.urgentRecommendations.map(r => card(`⚠️ ${e(r)}`, '#ef4444', '#fee2e2')).join('')) : ''}
+
+                    ${data.mediumRecommendations.length ? section('📅 التوصيات متوسطة المدى', '#3b82f6', data.mediumRecommendations.map(r => card(`📌 ${e(r)}`, '#3b82f6', '#eff6ff')).join('')) : ''}
+
+                    ${data.strategicSolutions.length ? section('🎯 الحلول الاستراتيجية', '#10b981', data.strategicSolutions.map(s => card(`✨ ${e(s)}`, '#10b981', '#ecfdf5')).join('')) : ''}
+
+                    ${section('📊 التقييم النهائي', '#667eea', card(`
+                        <p style="margin:0 0 8px;"><strong>⭐ التقييم العام:</strong> ${e(getRatingText(data.overallRating))}</p>
+                        <p style="margin:0 0 8px;"><strong>💪 استمرار الدعم:</strong> ${e(data.continueSupport) || '-'}</p>
+                        ${data.finalNotes ? `<p style="margin:0 0 8px;"><strong>📝 ملاحظات ختامية:</strong> ${e(data.finalNotes)}</p>` : ''}
+                        <p style="margin:0;color:#10b981;"><strong>✅ تم الإقرار بصحة البيانات</strong></p>
+                    `))}
+
+                    <div style="text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:11px;">
+                        تم إنشاء هذا التقرير بواسطة نظام ضبط الجودة — © ${new Date().getFullYear()}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function exportToPDF() {
+            const data = collectFormData();
+            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
+            const date = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            Swal.fire({
+                title: 'جاري إنشاء PDF...',
+                text: 'تحضير التقرير بالعربية...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            let pdfContainer = null;
+            try {
+                await ensureArabicFontLoaded();
+                const reportHtml = buildReportContent(data, period, date);
+                const { container, element } = createPdfContainer(reportHtml);
+                pdfContainer = container;
+
+                if (!element) throw new Error('تعذر إنشاء محتوى التقرير');
+
+                await new Promise(r => setTimeout(r, 600));
+
+                const fileName = `quality_report_${new Date().toISOString().split('T')[0]}.pdf`;
+
+                try {
+                    const canvas = await captureReportCanvas(element);
+                    canvasToPdf(canvas, fileName);
+                } catch (primaryErr) {
+                    console.warn('Primary PDF export failed, using fallback:', primaryErr);
+                    await exportViaHtml2pdf(element, fileName);
+                }
+
+                Swal.fire('تم التصدير', 'تم تنزيل ملف PDF بنجاح', 'success');
+            } catch (err) {
+                console.error('PDF export error:', err);
+                Swal.fire('خطأ', 'تعذر إنشاء PDF. تأكد من الاتصال بالإنترنت وحاول مرة أخرى.', 'error');
+            } finally {
+                if (pdfContainer) pdfContainer.remove();
+            }
+        }
+        
+        async function printReport() {
+            const data = collectFormData();
+            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
+            const date = new Date().toLocaleDateString('ar-SA');
+
+            await ensureArabicFontLoaded();
+            const reportHTML = buildReportHTML(data, period, date);
+            const win = window.open('', '_blank');
+            win.document.write(reportHTML);
+            win.document.close();
+            win.onload = () => win.print();
+        }
+        
+        function buildReportHTML(data, period, date) {
+            return `<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                <meta charset="UTF-8">
+                <title>تقرير ضبط الجودة</title>
+                <style>${pdfEmbeddedFontCss || ''}body,.pdf-report,.pdf-report *{font-family:${PDF_FONT}!important;direction:rtl;text-align:right;unicode-bidi:embed;}</style>
+                </head><body>${buildReportContent(data, period, date)}</body></html>`;
+        }
+        
+        function exportToEmail() {
+            const data = collectFormData();
+            const period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
+            let body = `التقرير التحليلي لضبط الجودة\nالفترة: ${period}\n\n`;
+            body += `البيانات:\n- المختص: ${data.specialistName}\n- المركز: ${data.centerName}\n`;
+            body += `\nالإحصائيات:\n- الموظفين: ${data.staffCount}\n- الطلبة: ${data.studentCount}\n- الحضور: ${clampPercentValue(data.attendanceRate) || data.attendanceRate}%\n`;
+            if (data.strategies.length) {
+                body += `\nاستراتيجيات التعلم:\n${data.strategies.map(s => `- ${s.type}: ${s.description}`).join('\n')}\n`;
+            }
+            if (data.communityParticipations.length) {
+                body += `\nالمشاركة المجتمعية:\n${data.communityParticipations.map(c => `- ${c.type}`).join('\n')}\n`;
+            }
+            if (data.urgentRecommendations.length) {
+                body += `\nالتوصيات العاجلة:\n${data.urgentRecommendations.map(r => `- ${r}`).join('\n')}\n`;
+            }
+            body += `\nالتقييم: ${getRatingText(data.overallRating)}`;
+            window.location.href = `mailto:?subject=تقرير ضبط الجودة - ${data.centerName}&body=${encodeURIComponent(body)}`;
+            Swal.fire('تم', 'تم فتح البريد', 'info');
+        }
+        
         function exportToJSON() {
-            const formData = new FormData(document.getElementById('qualityForm'));
-            const data = Object.fromEntries(formData.entries());
+            const data = collectFormData();
             data.period = `${document.getElementById('periodStart').value} - ${document.getElementById('periodEnd').value}`;
-            
-            const json = JSON.stringify(data, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
+            data.exportDate = new Date().toISOString();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'quality-report.json';
+            a.download = `تقرير_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-            
             URL.revokeObjectURL(url);
+            Swal.fire('تم', 'تم حفظ JSON', 'success');
         }
-
-        document.getElementById('qualityForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-        });
     </script>
 </body>
 </html>

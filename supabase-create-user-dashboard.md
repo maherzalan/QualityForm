@@ -5,7 +5,7 @@
 1. افتح **Authentication** → **Users**
 2. اضغط **Add user** → **Create new user**
 3. أدخل:
-   - **Email:** `demo@gmail.com`
+   - **Email:** `demo.quality.unrwa@gmail.com` (لا تستخدم `demo@gmail.com`)
    - **Password:** `Demo@123456789`
 4. فعّل **Auto Confirm User**
 5. احفظ

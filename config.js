@@ -9,8 +9,8 @@ window.SUPABASE_CONFIG = {
     // legacyAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' // استخدمه إذا فشل المفتاح أعلاه
 };
 
-/** حساب تجريبي — يُفعَّل بعد تنفيذ supabase-seed.sql في Supabase */
+/** حساب تجريبي — أنشئه من Supabase Dashboard أو نفّذ supabase-seed.sql */
 window.DEMO_CREDENTIALS = {
-    email: 'demo@gmail.com',
+    email: 'demo.quality.unrwa@gmail.com',
     password: 'Demo@123456789'
 };

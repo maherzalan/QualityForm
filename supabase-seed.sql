@@ -2,8 +2,9 @@
 -- مستخدم تجريبي + بيانات افتراضية
 -- نفّذ في: Supabase → SQL Editor → Run
 --
--- البريد: demo@gmail.com
+-- البريد: demo.quality.unrwa@gmail.com
 -- كلمة المرور: Demo@123456789
+-- ملاحظة: demo@gmail.com مرفوض من Supabase Auth API
 -- ============================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -11,7 +12,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 DO $$
 DECLARE
   demo_user_id uuid := 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-  demo_email text := 'demo@gmail.com';
+  demo_email text := 'demo.quality.unrwa@gmail.com';
   demo_password text := 'Demo@123456789';
   report_id uuid := 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22';
   encrypted_pw text;
@@ -172,6 +173,6 @@ SELECT
   u.email_confirmed_at IS NOT NULL AS email_confirmed,
   (SELECT count(*) FROM auth.identities i WHERE i.user_id = u.id) AS identities_count
 FROM auth.users u
-WHERE u.email = 'demo@gmail.com';
+WHERE u.email = 'demo.quality.unrwa@gmail.com';
 
-SELECT '✅ جاهز للدخول' AS status, 'demo@gmail.com' AS email, 'Demo@123456789' AS password;
+SELECT '✅ جاهز للدخول' AS status, 'demo.quality.unrwa@gmail.com' AS email, 'Demo@123456789' AS password;

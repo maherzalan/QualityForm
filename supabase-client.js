@@ -69,7 +69,10 @@
             return 'لا تفتح الملف مباشرة (file://). شغّل start-server.bat ثم افتح http://localhost:5500';
         }
         if (msg.includes('invalid login credentials') || code.includes('invalid_credentials')) {
-            return 'بيانات الدخول غير صحيحة. أنشئ المستخدم من Supabase → Authentication → Users (demo@gmail.com / Demo@123456789) مع تفعيل Auto Confirm.';
+            return 'بيانات الدخول غير صحيحة. أنشئ المستخدم يدوياً من Supabase → Authentication → Users (مع Auto Confirm). لا تستخدم demo@gmail.com — Supabase يرفضه.';
+        }
+        if (msg.includes('email_address_invalid') || code.includes('email_address_invalid')) {
+            return 'البريد مرفوض من Supabase. استخدم بريداً حقيقياً (مثل Gmail) أو أنشئ المستخدم من لوحة Authentication → Users.';
         }
         if (msg.includes('email not confirmed')) {
             return 'البريد غير مفعّل. عطّل Confirm email في Authentication → Providers → Email.';

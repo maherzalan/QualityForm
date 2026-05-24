@@ -35,6 +35,10 @@
     function renderReportCard(report) {
         const rating = report.overall_rating ? RATING_LABELS[report.overall_rating] || report.overall_rating : 'غير محدد';
         const period = [report.period_start, report.period_end].filter(Boolean).join(' — ');
+        const canDelete = (typeof isSuperAdmin === 'function' && isSuperAdmin())
+            || report.user_id === window.currentUser?.id;
+        const regionLine = (typeof isAdminUser === 'function' && isAdminUser() && report.region)
+            ? `<p><strong>المنطقة:</strong> ${escapeHtml(report.region)}</p>` : '';
 
         return `
             <article class="report-card" data-id="${report.id}">
@@ -44,6 +48,7 @@
                 </div>
                 <div class="report-card-meta">
                     <p><strong>المختص:</strong> ${escapeHtml(report.specialist_name)}</p>
+                    ${regionLine}
                     <p><strong>تاريخ الزيارة:</strong> ${escapeHtml(formatDate(report.visit_date || report.entry_date))}</p>
                     ${period ? `<p><strong>الفترة:</strong> ${escapeHtml(period)}</p>` : ''}
                 </div>
@@ -54,10 +59,16 @@
                 </div>
                 <div class="report-card-actions">
                     <button type="button" class="btn-report-view" onclick="viewReportDetails('${report.id}')">عرض التفاصيل</button>
-                    <button type="button" class="btn-report-delete" onclick="confirmDeleteReport('${report.id}')">حذف</button>
+                    <button type="button" class="btn-report-email" onclick="showShareReportModal('${report.id}')">📧 إرسال</button>
+                    ${canDelete ? `<button type="button" class="btn-report-delete" onclick="confirmDeleteReport('${report.id}')">حذف</button>` : ''}
                 </div>
             </article>
         `;
+    }
+
+    function canDeleteReport(report) {
+        return (typeof isSuperAdmin === 'function' && isSuperAdmin())
+            || report?.user_id === window.currentUser?.id;
     }
 
     async function loadPreviousReports() {
@@ -165,8 +176,12 @@
                 title: `تقرير: ${r.center_name}`,
                 html,
                 width: '720px',
+                showDenyButton: true,
+                denyButtonText: '📧 إرسال بالبريد',
                 confirmButtonText: 'إغلاق',
                 customClass: { popup: 'swal-rtl swal-wide swal-details' }
+            }).then(result => {
+                if (result.isDenied) showShareReportModal(reportId);
             });
         } catch (err) {
             Swal.fire('خطأ', err.message || 'تعذر تحميل التفاصيل', 'error');

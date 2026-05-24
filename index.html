@@ -591,6 +591,8 @@
             </div>
             <div id="authUserInfo" class="auth-user-info hidden">
                 <span id="authUserName" class="auth-user-name">مستخدم</span>
+                <a id="adminDashboardLink" href="admin-dashboard.html" class="auth-btn auth-btn-register hidden">📊 لوحة التحكم</a>
+                <a id="manageUsersLink" href="manage-users.html" class="auth-btn auth-btn-register hidden">👥 المستخدمون</a>
                 <button type="button" class="auth-btn auth-btn-logout" onclick="handleSignOut()">تسجيل خروج</button>
             </div>
         </div>
@@ -840,6 +842,7 @@
                 <button class="export-btn export-email" onclick="exportToEmail()">📧 البريد</button>
                 <button class="export-btn export-json" onclick="exportToJSON()">💾 JSON</button>
                 <button class="export-btn export-print" onclick="printReport()">🖨️ طباعة</button>
+                <button class="export-btn export-email-send" onclick="sendSavedReportByEmail()">📧 إرسال بالبريد (PDF)</button>
             </div>
             <button class="btn btn-primary" onclick="startNewReport()" style="margin-top: 30px;">تقرير جديد</button>
             <button type="button" class="btn btn-secondary" onclick="scrollToReports()" style="margin-top: 12px;">📂 عرض تقاريري المحفوظة</button>
@@ -852,7 +855,7 @@
 
         <section id="previousReports" class="reports-section">
             <div class="reports-section-header">
-                <h2>📂 التقارير السابقة</h2>
+                <h2 id="reportsSectionTitle">📂 التقارير السابقة</h2>
                 <button type="button" class="btn-refresh-reports" onclick="loadPreviousReports()" title="تحديث القائمة">🔄 تحديث</button>
             </div>
             <p id="reportsEmpty" class="reports-empty hidden">لا توجد تقارير محفوظة بعد. أرسل تقريراً جديداً ليظهر هنا.</p>
@@ -863,12 +866,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="config.js"></script>
     <script src="supabase-client.js"></script>
+    <script src="region-filter.js"></script>
+    <script src="auth-service.js"></script>
     <script src="form-data.js"></script>
     <script src="reports-api.js"></script>
-    <script src="auth-ui.js"></script>
+    <script src="email-service.js"></script>
     <script src="load-reports.js"></script>
+    <script src="report-share.js"></script>
+    <script src="auth-ui.js"></script>
     <script>
         let currentStep = 1;
         let challengeCount = 0, securityCount = 0, competitionCount = 0;
@@ -1300,7 +1308,8 @@
 
             try {
                 const data = collectFormData();
-                await saveCompleteReport(data);
+                const report = await saveCompleteReport(data);
+                window._lastSavedReportId = report.id;
                 Swal.close();
                 Swal.fire('تم الإرسال', 'تم حفظ التقرير في قاعدة البيانات بنجاح', 'success');
                 document.getElementById('qualityForm').style.display = 'none';
@@ -1316,6 +1325,16 @@
                 Swal.fire('خطأ', err.message || 'تعذر حفظ التقرير', 'error');
             }
         }
+
+        function sendSavedReportByEmail() {
+            if (window._lastSavedReportId) {
+                showShareReportModal(window._lastSavedReportId);
+            } else if (typeof showShareReportModal === 'function') {
+                showShareReportModal(null);
+            }
+        }
+
+        window.sendSavedReportByEmail = sendSavedReportByEmail;
 
         function getRatingText(rating) {
             const ratings = {'1':'⭐ ضعيف جداً','2':'⭐⭐ ضعيف','3':'⭐⭐⭐ متوسط','4':'⭐⭐⭐⭐ جيد','5':'⭐⭐⭐⭐⭐ ممتاز'};
@@ -1680,6 +1699,8 @@
             URL.revokeObjectURL(url);
             Swal.fire('تم', 'تم حفظ JSON', 'success');
         }
+
+        window.buildReportContent = buildReportContent;
     </script>
 </body>
 </html>

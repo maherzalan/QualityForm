@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم ضبط الجودة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles-auth.css">
+    <link rel="stylesheet" href="admin-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="admin-body" id="adminBody">
+    <header class="admin-header" id="adminHeader">
+        <div>
+            <h1 id="adminPageTitle">📊 لوحة تحكم ضبط الجودة</h1>
+            <p id="adminWelcome">جاري التحميل...</p>
+        </div>
+        <div class="admin-header-actions">
+            <a href="index.html" class="admin-link-btn" onclick="sessionStorage.setItem('stayOnIndex','1')">📝 نموذج التقرير</a>
+            <a id="manageUsersLink" href="manage-users.html" class="admin-link-btn hidden">👥 إدارة المستخدمين</a>
+            <button type="button" class="admin-link-btn" onclick="handleSignOut()">تسجيل خروج</button>
+        </div>
+    </header>
+
+    <nav class="admin-tabs" id="adminTabs">
+        <button type="button" class="admin-tab active" data-tab="overview" onclick="switchAdminTab('overview')">📊 نظرة عامة</button>
+        <button type="button" class="admin-tab" data-tab="reports" onclick="switchAdminTab('reports')">📋 التقارير</button>
+        <button type="button" class="admin-tab hidden" data-tab="regions" id="tabRegionsBtn" onclick="switchAdminTab('regions')">🗺️ المناطق</button>
+        <button type="button" class="admin-tab hidden" data-tab="users" id="tabUsersBtn" onclick="switchAdminTab('users')">👥 المستخدمون</button>
+    </nav>
+
+    <main class="admin-layout">
+        <aside class="admin-sidebar" id="reportsSidebar">
+            <h3>فلترة التقارير</h3>
+            <div class="filter-group">
+                <label>المنطقة</label>
+                <select id="filterRegion"></select>
+            </div>
+            <div class="filter-group">
+                <label>اسم المركز</label>
+                <input type="text" id="filterCenter" placeholder="بحث...">
+            </div>
+            <div class="filter-group">
+                <label>التقييم</label>
+                <select id="filterRating">
+                    <option value="">الكل</option>
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>من تاريخ</label>
+                <input type="date" id="filterDateFrom">
+            </div>
+            <div class="filter-group">
+                <label>إلى تاريخ</label>
+                <input type="date" id="filterDateTo">
+            </div>
+            <div class="filter-group">
+                <label>استمرار الدعم</label>
+                <select id="filterSupport">
+                    <option value="">الكل</option>
+                    <option value="نعم - بأولوية عالية">نعم - عالية</option>
+                    <option value="نعم - بأولوية متوسطة">نعم - متوسطة</option>
+                    <option value="لا - يحتاج إعادة تقييم">لا</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="button" class="btn-admin-primary" onclick="refreshAdminData()">تطبيق</button>
+                <button type="button" class="btn-admin-secondary" onclick="resetAdminFilters()">مسح</button>
+            </div>
+        </aside>
+
+        <section class="admin-main">
+            <div id="panelOverview" class="admin-panel">
+                <div id="adminStats" class="admin-stats"></div>
+                <div class="admin-charts-row">
+                    <div class="chart-card"><canvas id="chartByRegion"></canvas></div>
+                    <div class="chart-card"><canvas id="chartByRating"></canvas></div>
+                </div>
+                <div id="coordinatorsPanel" class="hidden">
+                    <h3>👥 المنسقون التابعون لك</h3>
+                    <div id="coordinatorsTable"></div>
+                </div>
+            </div>
+
+            <div id="panelReports" class="admin-panel hidden">
+                <div class="admin-toolbar">
+                    <h2>التقارير</h2>
+                    <div>
+                        <input type="search" id="reportQuickSearch" class="admin-search" placeholder="بحث سريع..." oninput="filterAdminTableLocal()">
+                        <button type="button" class="btn-admin-secondary" onclick="refreshAdminData()">🔄 تحديث</button>
+                        <button type="button" class="btn-admin-primary" onclick="exportAdminCsv()">📥 تصدير CSV</button>
+                    </div>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="adminReportsTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortAdminTable(0)">المركز</th>
+                                <th onclick="sortAdminTable(1)">المنطقة</th>
+                                <th onclick="sortAdminTable(2)">المختص</th>
+                                <th onclick="sortAdminTable(3)">التاريخ</th>
+                                <th onclick="sortAdminTable(4)">التقييم</th>
+                                <th onclick="sortAdminTable(5)">الحضور</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminReportsBody">
+                            <tr><td colspan="7" class="empty-cell">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="panelRegions" class="admin-panel hidden">
+                <div class="admin-toolbar">
+                    <h2>🗺️ المناطق</h2>
+                    <button type="button" class="btn-admin-primary hidden" id="btnAddRegion" onclick="openAddRegionModal()">+ منطقة</button>
+                </div>
+                <div id="regionsTableWrap"></div>
+            </div>
+
+            <div id="panelUsers" class="admin-panel hidden">
+                <div class="admin-toolbar">
+                    <h2>👥 المستخدمون</h2>
+                    <div>
+                        <button type="button" class="btn-admin-primary" id="btnAddUser" onclick="openCreateUserModal()">+ مستخدم</button>
+                        <a href="manage-users.html" class="btn-admin-secondary">صفحة الإدارة الكاملة</a>
+                    </div>
+                </div>
+                <div id="usersTableWrap"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="region-filter.js"></script>
+    <script src="auth-service.js"></script>
+    <script src="region-manager.js"></script>
+    <script src="user-manager.js"></script>
+    <script src="reports-api.js"></script>
+    <script src="reports-service.js"></script>
+    <script src="email-service.js"></script>
+    <script src="load-reports.js"></script>
+    <script src="report-share.js"></script>
+    <script src="auth-ui.js"></script>
+    <script src="admin-reports.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await getCurrentUser();
+                if (!window.currentUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                if (typeof isCoordinator === 'function' && isCoordinator()) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                await loadAdminDashboard();
+            } catch (e) {
+                console.error(e);
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

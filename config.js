@@ -4,9 +4,14 @@
  */
 window.SUPABASE_CONFIG = {
     url: 'https://ywpyublgyxwvqwekvydf.supabase.co',
-    // Publishable key (موصى به) أو Legacy anon key (يبدأ بـ eyJ) من: Project Settings → API
     anonKey: 'sb_publishable_ScpPKdNcnCdqYf978CmzlA_Kwo0zupe',
-    // legacyAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' // استخدمه إذا فشل المفتاح أعلاه
+};
+
+/** EmailJS — https://www.emailjs.com */
+window.EMAILJS_CONFIG = {
+    serviceId: 'YOUR_SERVICE_ID',
+    templateId: 'YOUR_TEMPLATE_ID',
+    publicKey: 'YOUR_PUBLIC_KEY'
 };
 
 /** حساب تجريبي — أنشئه من Supabase Dashboard أو نفّذ supabase-seed.sql */

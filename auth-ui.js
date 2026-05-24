@@ -45,7 +45,29 @@
         setVisible(reportsSection, isLoggedIn);
 
         if (userNameEl) {
-            userNameEl.textContent = profile?.full_name || user?.email || 'مستخدم';
+            const levelLabel = (typeof getLevelLabel === 'function' && profile?.user_level)
+                ? ` (${getLevelLabel(profile.user_level)})` : '';
+            userNameEl.textContent = (profile?.full_name || user?.email || 'مستخدم') + levelLabel;
+        }
+
+        const adminLink = document.getElementById('adminDashboardLink');
+        const manageLink = document.getElementById('manageUsersLink');
+        if (adminLink) {
+            setVisible(adminLink, isLoggedIn && typeof isAdminUser === 'function' && isAdminUser());
+        }
+        if (manageLink) {
+            setVisible(manageLink, isLoggedIn && typeof checkPermission === 'function' && checkPermission('مدير_منطقة'));
+        }
+
+        const reportsTitle = document.getElementById('reportsSectionTitle');
+        if (reportsTitle && isLoggedIn) {
+            if (typeof isSuperAdmin === 'function' && isSuperAdmin()) {
+                reportsTitle.textContent = '📂 جميع التقارير';
+            } else if (typeof isRegionManager === 'function' && isRegionManager()) {
+                reportsTitle.textContent = '📂 تقارير المنطقة';
+            } else {
+                reportsTitle.textContent = '📂 تقاريري السابقة';
+            }
         }
     }
 
@@ -93,6 +115,7 @@
             await signIn(result.value.email, result.value.password);
             updateAuthUI({ user: window.currentUser, profile: window.currentProfile });
             if (typeof loadPreviousReports === 'function') await loadPreviousReports();
+            if (typeof redirectByRole === 'function') redirectByRole(true);
             Swal.fire('تم', 'مرحباً بك!', 'success');
         } catch (err) {
             console.error('[Login]', err);
@@ -215,6 +238,9 @@
             updateAuthUI(session);
             if (session?.user && typeof loadPreviousReports === 'function') {
                 await loadPreviousReports();
+            }
+            if (session?.user && typeof redirectByRole === 'function') {
+                redirectByRole(false);
             }
         } catch (err) {
             console.error('Auth init error:', err);

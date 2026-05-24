@@ -89,7 +89,7 @@
     async function fetchProfile(userId) {
         const { data, error } = await getSupabase()
             .from('profiles')
-            .select('id, full_name, role, region, job_title')
+            .select('id, full_name, role, region, job_title, user_level, region_id, manager_id, email, phone, regions:region_id(id, name, code)')
             .eq('id', userId)
             .maybeSingle();
 
@@ -130,11 +130,15 @@
         }
 
         if (data.user) {
+            const regionId = typeof resolveRegionId === 'function' ? await resolveRegionId(region) : null;
             const { error: profileError } = await getSupabase().from('profiles').upsert({
                 id: data.user.id,
                 full_name: fullName,
                 role: role,
                 region: region,
+                region_id: regionId,
+                user_level: 'منسق',
+                email: email,
                 job_title: role,
                 updated_at: new Date().toISOString()
             });

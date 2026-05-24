@@ -283,6 +283,7 @@
 }
 
 .btn-report-view,
+.btn-report-email,
 .btn-report-delete {
     flex: 1;
     border: none;
@@ -300,12 +301,18 @@
     color: white;
 }
 
+.btn-report-email {
+    background: #0ea5e9;
+    color: white;
+}
+
 .btn-report-delete {
     background: #fee2e2;
     color: #b91c1c;
 }
 
 .btn-report-view:hover,
+.btn-report-email:hover,
 .btn-report-delete:hover {
     opacity: 0.9;
 }

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين — ضبط الجودة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles-auth.css">
+    <link rel="stylesheet" href="admin-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="admin-body">
+    <header class="admin-header">
+        <div>
+            <h1>👥 إدارة المستخدمين</h1>
+            <p id="usersPageWelcome">جاري التحميل...</p>
+        </div>
+        <div class="admin-header-actions">
+            <a href="admin-dashboard.html" class="admin-link-btn">📊 لوحة التحكم</a>
+            <button type="button" class="admin-link-btn" onclick="handleSignOut()">تسجيل خروج</button>
+        </div>
+    </header>
+
+    <main class="admin-main admin-main-full">
+        <div class="admin-toolbar">
+            <h2>قائمة المستخدمين</h2>
+            <button type="button" class="btn-admin-primary" id="btnCreateUser" onclick="openCreateUserModal()">+ إضافة مستخدم</button>
+        </div>
+        <div id="usersTableWrap"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="region-filter.js"></script>
+    <script src="auth-service.js"></script>
+    <script src="user-manager.js"></script>
+    <script src="auth-ui.js"></script>
+    <script>
+        async function refreshUsersList() {
+            const users = await getManageableUsers();
+            renderUsersTable(users, 'usersTableWrap');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await getCurrentUser();
+                if (!window.currentUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                if (!checkPermission('مدير_منطقة')) {
+                    Swal.fire('تنبيه', 'ليس لديك صلاحية هذه الصفحة', 'warning')
+                        .then(() => { window.location.href = 'index.html'; });
+                    return;
+                }
+                const p = window.currentProfile;
+                document.getElementById('usersPageWelcome').textContent =
+                    `${p?.full_name || ''} — ${getLevelLabel(getUserLevel())}`;
+                await refreshUsersList();
+            } catch (e) {
+                console.error(e);
+                Swal.fire('خطأ', e.message, 'error');
+            }
+        });
+
+        window.refreshUsersList = refreshUsersList;
+    </script>
+</body>
+</html>

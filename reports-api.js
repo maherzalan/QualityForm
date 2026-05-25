@@ -5,6 +5,16 @@
     'use strict';
 
     const REPORT_LIST_FIELDS = 'id, user_id, center_name, region, specialist_name, visit_date, entry_date, overall_rating, staff_count, student_count, attendance_rate, period_start, period_end, continue_support, created_at';
+    const QUERY_TIMEOUT_MS = 15000;
+
+    function withTimeout(promise, ms, label) {
+        return Promise.race([
+            promise,
+            new Promise((_, reject) => {
+                setTimeout(() => reject(new Error(`انتهت مهلة جلب التقارير (${label})`)), ms);
+            })
+        ]);
+    }
 
     async function mapReportRow(data, userId) {
         const regionId = typeof resolveRegionId === 'function' ? await resolveRegionId(data.region) : null;
@@ -118,17 +128,43 @@
         const user = window.currentUser;
         if (!user) return [];
 
-        let query = getSupabase()
+        const client = getSupabase();
+        const { data: { session } } = await withTimeout(
+            client.auth.getSession(),
+            5000,
+            'session'
+        );
+        if (!session?.access_token) {
+            throw new Error('انتهت الجلسة — سجّل الدخول مرة أخرى');
+        }
+
+        let query = client
             .from('reports')
             .select(REPORT_LIST_FIELDS)
             .order('created_at', { ascending: false });
 
-        if (filters._ownerOnly) query = query.eq('user_id', filters._ownerOnly);
+        const ownerId = filters._ownerOnly || user.id;
+        const isAdmin = typeof isAdminUser === 'function' && isAdminUser();
+        const isSuper = typeof isSuperAdmin === 'function' && isSuperAdmin();
+
+        if (!isSuper) {
+            if (isAdmin && typeof isRegionManager === 'function' && isRegionManager()) {
+                const regionId = window.currentProfile?.region_id;
+                if (regionId) {
+                    query = query.eq('region_id', regionId);
+                }
+            } else {
+                query = query.eq('user_id', ownerId);
+            }
+        }
 
         query = applyReportFilters(query, filters);
 
-        const { data, error } = await query;
-        if (error) throw error;
+        const { data, error } = await withTimeout(query, QUERY_TIMEOUT_MS, 'reports');
+        if (error) {
+            console.error('[reports-api] fetch:', error);
+            throw error;
+        }
         return data || [];
     }
 

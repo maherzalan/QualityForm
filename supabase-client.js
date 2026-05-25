@@ -50,13 +50,23 @@
             throw new Error('مكتبة Supabase غير محمّلة');
         }
         const { url, anonKey } = getConfig();
+
+        function fetchWithTimeout(input, init = {}) {
+            const ms = 15000;
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), ms);
+            const merged = { ...init, signal: controller.signal };
+            return fetch(input, merged).finally(() => clearTimeout(id));
+        }
+
         supabaseClient = supabase.createClient(url, anonKey, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
                 detectSessionInUrl: false,
                 storage: getAuthStorage()
-            }
+            },
+            global: { fetch: fetchWithTimeout }
         });
         return supabaseClient;
     }
@@ -273,7 +283,18 @@
     window.signOut = signOut;
     window.getCurrentUser = getCurrentUser;
     window.onAuthStateChange = onAuthStateChange;
+    async function refreshCurrentProfile() {
+        if (!currentUser) return null;
+        try {
+            currentProfile = await ensureProfileForUser(currentUser);
+        } catch (e) {
+            console.warn('[Supabase] refreshCurrentProfile:', e);
+        }
+        return currentProfile;
+    }
+
     window.fetchProfile = fetchProfile;
+    window.refreshCurrentProfile = refreshCurrentProfile;
     window.isFileProtocol = isFileProtocol;
     window.warnIfFileProtocol = warnIfFileProtocol;
 

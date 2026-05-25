@@ -164,7 +164,10 @@
                     window.location.href = 'index.html';
                     return;
                 }
-                if (typeof isCoordinator === 'function' && isCoordinator()) {
+                if (typeof refreshCurrentProfile === 'function') {
+                    await refreshCurrentProfile();
+                }
+                if (typeof isCoordinator === 'function' && isCoordinator() && !isAdminUser()) {
                     window.location.href = 'index.html';
                     return;
                 }

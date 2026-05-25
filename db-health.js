@@ -4,7 +4,7 @@
 (function () {
     'use strict';
 
-    const EXPECTED_MIGRATIONS = 5;
+    const EXPECTED_MIGRATIONS = 6;
     let checkPromise = null;
 
     function normalizeHealth(data) {
@@ -29,10 +29,28 @@
                 return { ok: false, needsSetup: true, skipBanner: true, reason: 'no_client' };
             }
 
-            const { data: rpcData, error: rpcError } = await client.rpc('check_database_health');
+            let rpcData = null;
+            let rpcError = null;
+            try {
+                const rpcResult = await Promise.race([
+                    client.rpc('check_database_health'),
+                    new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('health rpc timeout')), 10000);
+                    })
+                ]);
+                rpcData = rpcResult.data;
+                rpcError = rpcResult.error;
+            } catch (e) {
+                console.warn('[db-health] rpc:', e);
+                rpcError = e;
+            }
 
             if (!rpcError && rpcData) {
                 return normalizeHealth(rpcData);
+            }
+
+            if (rpcError && rpcError.code !== 'PGRST202') {
+                console.warn('[db-health] check_database_health:', rpcError.message || rpcError);
             }
 
             const rpcMissing =

@@ -264,7 +264,7 @@
             const session = await getCurrentUser();
             updateAuthUI(session);
             if (session?.user && typeof loadPreviousReports === 'function') {
-                await loadPreviousReports();
+                loadPreviousReports().catch((e) => console.warn('[Auth] reports:', e));
             }
             if (session?.user && typeof redirectByRole === 'function') {
                 redirectByRole(false);
@@ -279,9 +279,6 @@
 
         onAuthStateChange(({ user, profile }) => {
             updateAuthUI({ user, profile });
-            if (user && typeof loadPreviousReports === 'function') {
-                loadPreviousReports().catch(console.error);
-            }
         });
     }
 

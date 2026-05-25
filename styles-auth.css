@@ -237,6 +237,10 @@
     border: 2px dashed #e2e8f0;
 }
 
+.reports-error {
+    color: #c0392b;
+}
+
 .reports-loading {
     text-align: center;
     color: #718096;

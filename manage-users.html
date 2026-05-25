@@ -50,6 +50,9 @@
                     window.location.href = 'index.html';
                     return;
                 }
+                if (typeof refreshCurrentProfile === 'function') {
+                    await refreshCurrentProfile();
+                }
                 if (!checkPermission('مدير_منطقة')) {
                     Swal.fire('تنبيه', 'ليس لديك صلاحية هذه الصفحة', 'warning')
                         .then(() => { window.location.href = 'index.html'; });

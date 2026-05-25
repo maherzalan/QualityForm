@@ -4,6 +4,8 @@
 (function () {
     'use strict';
 
+    let loadReportsSeq = 0;
+
     const RATING_LABELS = {
         1: '⭐ ضعيف جداً',
         2: '⭐⭐ ضعيف',
@@ -76,11 +78,20 @@
         const emptyEl = document.getElementById('reportsEmpty');
         if (!listEl) return;
 
+        if (!window.currentUser) {
+            listEl.innerHTML = '';
+            if (emptyEl) emptyEl.classList.remove('hidden');
+            return;
+        }
+
+        const seq = ++loadReportsSeq;
         listEl.innerHTML = '<p class="reports-loading">جاري تحميل التقارير...</p>';
         if (emptyEl) emptyEl.classList.add('hidden');
 
         try {
             const reports = await fetchUserReports();
+            if (seq !== loadReportsSeq) return;
+
             if (!reports.length) {
                 listEl.innerHTML = '';
                 if (emptyEl) emptyEl.classList.remove('hidden');
@@ -89,8 +100,12 @@
             if (emptyEl) emptyEl.classList.add('hidden');
             listEl.innerHTML = reports.map(renderReportCard).join('');
         } catch (err) {
-            listEl.innerHTML = '';
-            Swal.fire('خطأ', err.message || 'تعذر تحميل التقارير', 'error');
+            if (seq !== loadReportsSeq) return;
+            console.error('[load-reports]', err);
+            listEl.innerHTML = `<p class="reports-loading reports-error">${escapeHtml(err.message || 'تعذر تحميل التقارير')}</p>`;
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('خطأ', err.message || 'تعذر تحميل التقارير', 'error');
+            }
         }
     }
 

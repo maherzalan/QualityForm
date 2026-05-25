@@ -4,7 +4,7 @@
 (function () {
     'use strict';
 
-    const EXPECTED_MIGRATIONS = 4;
+    const EXPECTED_MIGRATIONS = 5;
     let checkPromise = null;
 
     function normalizeHealth(data) {

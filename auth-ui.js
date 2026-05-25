@@ -111,15 +111,37 @@
         if (!result.isConfirmed) return;
 
         try {
-            Swal.fire({ title: 'جاري تسجيل الدخول...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            await signIn(result.value.email, result.value.password);
+            Swal.fire({
+                title: 'جاري تسجيل الدخول...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            await Promise.race([
+                signIn(result.value.email, result.value.password),
+                new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('انتهت مهلة الاتصال — حدّث الصفحة وحاول مرة أخرى')), 20000);
+                })
+            ]);
+
             updateAuthUI({ user: window.currentUser, profile: window.currentProfile });
-            if (typeof loadPreviousReports === 'function') await loadPreviousReports();
+
+            await Swal.fire({
+                icon: 'success',
+                title: 'تم',
+                text: 'مرحباً بك!',
+                timer: 2200,
+                showConfirmButton: true
+            });
+
+            if (typeof loadPreviousReports === 'function') {
+                loadPreviousReports().catch((e) => console.warn('[Login] تحميل التقارير:', e));
+            }
             if (typeof redirectByRole === 'function') redirectByRole(true);
-            Swal.fire('تم', 'مرحباً بك!', 'success');
         } catch (err) {
             console.error('[Login]', err);
-            Swal.fire('خطأ', err.message || 'تعذر تسجيل الدخول', 'error');
+            await Swal.fire('خطأ', err.message || 'تعذر تسجيل الدخول', 'error');
         }
     }
 

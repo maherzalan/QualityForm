@@ -23,10 +23,13 @@ supabase/
 انسخ من `.env.example` وأضف **DATABASE_URL**:
 
 ```
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.ywpyublgyxwvqwekvydf.supabase.co:5432/postgres
+DATABASE_URL=postgresql://postgres.ywpyublgyxwvqwekvydf:YOUR_DB_PASSWORD@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
 ```
 
-من: **Supabase → Project Settings → Database → Connection string → URI**
+من: **Supabase → Project Settings → Database → Connect → Session mode** (منفذ 5432)
+
+> على شبكات IPv4 فقط (مثل Windows بدون IPv6)، عنوان `db.[ref].supabase.co` يفشل بـ `ENOTFOUND`.
+> استخدم **Session pooler** من اللوحة — لا تخمّن `aws-0`/`aws-1` أو المنطقة.
 
 ### 2) تثبيت وتشغيل الهجرات
 

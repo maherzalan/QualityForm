@@ -86,15 +86,87 @@
         return error?.message || 'حدث خطأ غير متوقع';
     }
 
+    const PROFILE_SELECT =
+        'id, full_name, role, region, job_title, user_level, region_id, manager_id, email, phone, regions:region_id(id, name, code)';
+    const PROFILE_FETCH_MS = 8000;
+
+    function profileFromMetadata(user) {
+        const meta = user?.user_metadata || {};
+        return {
+            id: user.id,
+            email: user.email,
+            full_name: meta.full_name || user.email?.split('@')[0] || 'مستخدم',
+            role: 'منسق',
+            job_title: 'منسق',
+            user_level: 'منسق'
+        };
+    }
+
+    function withTimeout(promise, ms, label) {
+        return Promise.race([
+            promise,
+            new Promise((_, reject) => {
+                setTimeout(() => reject(new Error(`timeout: ${label}`)), ms);
+            })
+        ]);
+    }
+
     async function fetchProfile(userId) {
         const { data, error } = await getSupabase()
             .from('profiles')
-            .select('id, full_name, role, region, job_title, user_level, region_id, manager_id, email, phone, regions:region_id(id, name, code)')
+            .select(PROFILE_SELECT)
             .eq('id', userId)
             .maybeSingle();
 
+        if (error) {
+            const msg = (error.message || '').toLowerCase();
+            if (msg.includes('infinite recursion') || msg.includes('42p17')) {
+                console.warn('[Supabase] RLS recursion على profiles — نفّذ الهجرة 20250101000005_fix_rls_recursion.sql');
+            }
+            throw error;
+        }
+        return data;
+    }
+
+    async function ensureProfileForUser(user) {
+        let profile = await withTimeout(fetchProfile(user.id), PROFILE_FETCH_MS, 'fetchProfile').catch(() => null);
+        if (profile) return profile;
+
+        const meta = user.user_metadata || {};
+        const row = {
+            id: user.id,
+            full_name: meta.full_name || user.email?.split('@')[0] || 'مستخدم',
+            email: user.email,
+            role: 'منسق',
+            job_title: 'منسق',
+            user_level: 'منسق',
+            updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await withTimeout(
+            getSupabase().from('profiles').upsert(row).select(PROFILE_SELECT).single(),
+            PROFILE_FETCH_MS,
+            'upsertProfile'
+        );
+
         if (error) throw error;
         return data;
+    }
+
+    function queueProfileRefresh(user, onUpdated) {
+        const userId = user.id;
+        setTimeout(() => {
+            ensureProfileForUser(user)
+                .then((profile) => {
+                    if (currentUser?.id === userId && profile) {
+                        currentProfile = profile;
+                        if (typeof onUpdated === 'function') {
+                            onUpdated({ user: currentUser, profile: currentProfile });
+                        }
+                    }
+                })
+                .catch((e) => console.warn('[Supabase] profile refresh:', e));
+        }, 0);
     }
 
     async function signIn(email, password) {
@@ -109,12 +181,8 @@
         }
 
         currentUser = data.user;
-        try {
-            currentProfile = await fetchProfile(data.user.id);
-        } catch (profileErr) {
-            console.warn('[Supabase] تسجيل الدخول نجح لكن profile غير موجود:', profileErr);
-            currentProfile = null;
-        }
+        currentProfile = profileFromMetadata(data.user);
+        queueProfileRefresh(data.user);
         return { user: currentUser, profile: currentProfile };
     }
 
@@ -171,28 +239,26 @@
             return null;
         }
         currentUser = session.user;
-        try {
-            currentProfile = await fetchProfile(session.user.id);
-        } catch {
-            currentProfile = null;
-        }
+        currentProfile = profileFromMetadata(session.user);
+        queueProfileRefresh(session.user);
         return { user: currentUser, profile: currentProfile };
     }
 
     function onAuthStateChange(callback) {
-        return getSupabase().auth.onAuthStateChange(async (_event, session) => {
+        // لا تستخدم async هنا — يعلّق signInWithPassword (مشكلة معروفة في supabase-js)
+        return getSupabase().auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
                 currentUser = session.user;
-                try {
-                    currentProfile = await fetchProfile(session.user.id);
-                } catch {
-                    currentProfile = null;
+                if (!currentProfile || currentProfile.id !== session.user.id) {
+                    currentProfile = profileFromMetadata(session.user);
                 }
+                callback({ user: currentUser, profile: currentProfile });
+                queueProfileRefresh(session.user, callback);
             } else {
                 currentUser = null;
                 currentProfile = null;
+                callback({ user: null, profile: null });
             }
-            callback({ user: currentUser, profile: currentProfile });
         });
     }
 

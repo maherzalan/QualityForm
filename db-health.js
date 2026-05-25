@@ -4,9 +4,21 @@
 (function () {
     'use strict';
 
-    const EXPECTED_MIGRATIONS = 3;
-    let lastHealth = null;
+    const EXPECTED_MIGRATIONS = 4;
     let checkPromise = null;
+
+    function normalizeHealth(data) {
+        const h = typeof data === 'string' ? JSON.parse(data) : { ...data };
+        const regionsOk = (h.regions_count ?? 0) > 0;
+        const tablesOk = !!h.ready;
+        const migrationsOk = (h.migrations_applied ?? 0) >= EXPECTED_MIGRATIONS;
+
+        h.needsSetup = !tablesOk;
+        h.needsMigrate = tablesOk && !migrationsOk && (h.migrations_applied ?? 0) === 0;
+        h.ok = tablesOk && regionsOk;
+        h.skipBanner = false;
+        return h;
+    }
 
     async function checkDatabaseHealth() {
         if (checkPromise) return checkPromise;
@@ -14,36 +26,61 @@
         checkPromise = (async () => {
             const client = typeof getSupabase === 'function' ? getSupabase() : null;
             if (!client) {
-                return { ready: false, reason: 'no_client' };
+                return { ok: false, needsSetup: true, skipBanner: true, reason: 'no_client' };
             }
 
-            try {
-                const { data, error } = await client.rpc('check_database_health');
-                if (!error && data) {
-                    lastHealth = typeof data === 'string' ? JSON.parse(data) : data;
-                    return lastHealth;
-                }
-            } catch (e) {
-                console.warn('[db-health] rpc check_database_health:', e);
+            const { data: rpcData, error: rpcError } = await client.rpc('check_database_health');
+
+            if (!rpcError && rpcData) {
+                return normalizeHealth(rpcData);
             }
 
-            try {
-                const { error: regErr } = await client.from('regions').select('id').limit(1);
-                if (regErr) {
-                    if (regErr.code === '42P01' || regErr.message?.includes('does not exist') || regErr.code === 'PGRST205') {
-                        return { ready: false, reason: 'schema_missing', message: regErr.message };
-                    }
-                    return { ready: false, reason: 'regions_error', message: regErr.message };
-                }
-                const { count } = await client.from('regions').select('*', { count: 'exact', head: true });
+            const rpcMissing =
+                rpcError?.code === 'PGRST202' ||
+                rpcError?.message?.includes('check_database_health') ||
+                rpcError?.message?.includes('Could not find the function');
+
+            if (rpcMissing) {
                 return {
+                    ok: false,
+                    needsSetup: true,
+                    skipBanner: false,
+                    reason: 'functions_missing',
+                    hint: 'dashboard_or_migrate',
+                    rpcError: rpcError?.message
+                };
+            }
+
+            try {
+                const { error: regErr, count } = await client
+                    .from('regions')
+                    .select('id', { count: 'exact', head: true });
+
+                if (regErr) {
+                    const missing =
+                        regErr.code === '42P01' ||
+                        regErr.code === 'PGRST205' ||
+                        regErr.message?.includes('does not exist');
+                    return {
+                        ok: false,
+                        needsSetup: missing,
+                        skipBanner: !missing,
+                        reason: missing ? 'schema_missing' : 'regions_error',
+                        message: regErr.message
+                    };
+                }
+
+                return {
+                    ok: true,
                     ready: true,
                     regions_count: count ?? 0,
                     migrations_applied: null,
+                    needsSetup: false,
+                    skipBanner: false,
                     fallback: true
                 };
             } catch (e) {
-                return { ready: false, reason: 'unknown', message: e.message };
+                return { ok: false, needsSetup: true, reason: 'unknown', message: e.message };
             }
         })();
 
@@ -52,9 +89,11 @@
 
     async function ensureReferenceData() {
         const health = await checkDatabaseHealth();
-        if (!health.ready) return health;
-
-        if ((health.regions_count ?? 0) > 0) return health;
+        if (!health.ok && health.needsSetup) return health;
+        if ((health.regions_count ?? 0) > 0) {
+            health.ok = true;
+            return health;
+        }
 
         try {
             const { data, error } = await getSupabase().rpc('ensure_regions_seed');
@@ -64,7 +103,9 @@
             }
             console.info('[db-health] تم تعبئة المناطق:', data);
             checkPromise = null;
-            return checkDatabaseHealth();
+            const refreshed = await checkDatabaseHealth();
+            refreshed.ok = (refreshed.regions_count ?? 0) > 0;
+            return refreshed;
         } catch (e) {
             console.warn('[db-health]', e);
             return health;
@@ -75,31 +116,25 @@
         const { silent = false } = options;
         const health = await ensureReferenceData();
 
-        if (health.ready && (health.migrations_applied == null || health.migrations_applied >= EXPECTED_MIGRATIONS)) {
+        if (health.ok || health.skipBanner) {
             return health;
         }
 
-        if (health.ready && health.regions_count > 0 && health.fallback) {
-            return health;
-        }
-
-        if (!silent && typeof Swal !== 'undefined') {
-            const needsMigrate = health.reason === 'schema_missing' ||
-                (health.migrations_applied != null && health.migrations_applied < EXPECTED_MIGRATIONS);
-
-            if (needsMigrate) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'قاعدة البيانات تحتاج تحديث',
-                    html: `
-                        <p>شغّل الهجرات مرة واحدة من الطرفية:</p>
-                        <pre style="text-align:left;direction:ltr;background:#f1f5f9;padding:12px;border-radius:8px">npm install
-npm run db:migrate</pre>
-                        <p style="font-size:13px;color:#64748b">أضف <b>DATABASE_URL</b> في ملف <b>.env</b> من Supabase → Database → Connection string</p>
-                    `,
-                    confirmButtonText: 'حسناً'
-                });
-            }
+        if (!silent && typeof Swal !== 'undefined' && health.needsSetup) {
+            const useDashboard = health.hint === 'dashboard_or_migrate';
+            Swal.fire({
+                icon: 'warning',
+                title: 'إعداد قاعدة البيانات مطلوب',
+                html: useDashboard
+                    ? `<p><b>الطريقة 1 (بدون DATABASE_URL):</b></p>
+                       <p>Supabase → SQL Editor → الصق محتوى الملف:</p>
+                       <pre style="text-align:left;direction:ltr;font-size:12px">supabase/APPLY_IN_DASHBOARD.sql</pre>
+                       <p style="margin-top:12px"><b>الطريقة 2:</b> أضف DATABASE_URL في .env ثم:</p>
+                       <pre style="text-align:left;direction:ltr">npm run db:migrate</pre>`
+                    : `<p>شغّل: <code dir="ltr">npm run db:migrate</code></p>`,
+                confirmButtonText: 'حسناً',
+                width: 520
+            });
         }
 
         return health;
@@ -114,15 +149,19 @@ npm run db:migrate</pre>
             document.body.prepend(banner);
         }
 
-        if (health.ready && (health.regions_count ?? 0) > 0) {
+        if (health.ok || health.skipBanner) {
             banner.classList.add('hidden');
             return;
         }
 
+        const dashboardHint = health.hint === 'dashboard_or_migrate'
+            ? ' أو الصق <code dir="ltr">supabase/APPLY_IN_DASHBOARD.sql</code> في Supabase → SQL Editor'
+            : '';
+
         banner.classList.remove('hidden');
         banner.innerHTML = `
-            <strong>⚠️ قاعدة البيانات غير جاهزة</strong>
-            <span>نفّذ: <code dir="ltr">npm run db:migrate</code> بعد ضبط DATABASE_URL في .env</span>
+            <strong>⚠️ قاعدة البيانات تحتاج إعداداً لمرة واحدة</strong>
+            <span>${dashboardHint || ' أضف <code dir="ltr">DATABASE_URL</code> في .env ثم <code dir="ltr">npm run db:migrate</code>'}</span>
             <button type="button" onclick="this.parentElement.classList.add('hidden')">✕</button>
         `;
     }

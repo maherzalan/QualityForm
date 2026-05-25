@@ -235,7 +235,7 @@
 
         try {
             if (typeof ensureDatabaseReady === 'function') {
-                const health = await ensureDatabaseReady({ silent: false });
+                const health = await ensureDatabaseReady({ silent: true });
                 if (typeof showDbBanner === 'function') showDbBanner(health);
             }
 
